@@ -719,15 +719,28 @@ function DatePicker() {
 
 ### 5.1 Framework Adapters
 
-Adapters provide framework-specific integrations for controllers, with a comprehensive adapter system for different frameworks.
+Adapters provide framework-specific integrations for controllers, with a comprehensive adapter system for different frameworks. The Odyssey Uplink Protocol includes adapters for all major frontend frameworks.
+
+#### Available Adapters
+
+- **React Adapter** - For React applications
+- **Vue Adapter** - For Vue applications
+- **Angular Adapter** - For Angular applications
+- **Svelte Adapter** - For Svelte applications
+- **Vanilla Adapter** - For plain JavaScript applications without a framework
+
+Each adapter is optimized for its respective framework's reactivity system and component lifecycle. Detailed usage examples for each adapter are available in the [Framework Adapters documentation](./docs/FRAMEWORK_ADAPTERS.md).
 
 ```ts
 interface AdapterInterface {
   // Unique name for this adapter
   readonly name: string;
   
-  // Priority used for auto-detection (higher values = higher priority)
-  readonly priority: number;
+  // Version of the adapter
+  readonly version: string;
+  
+  // Initialize the adapter with optional configuration
+  initialize(config?: any): void;
   
   // Connect a controller to an element
   connectController(controller: Controller, element: HTMLElement): void;
@@ -750,14 +763,12 @@ interface AdapterInterface {
   
   // Call a method on the controller
   callMethod(controller: Controller, methodName: string, args?: any[]): any;
-  
-  // Check if this adapter can adapt to the current environment
-  canAdapt(): boolean;
 }
 
-class ReactAdapter implements AdapterInterface {
+// Example of the React Adapter implementation
+class ReactAdapter extends BaseAdapter {
   readonly name = 'react';
-  readonly priority = 10;
+  readonly version = '1.0.0';
   
   connectController(controller: Controller, element: HTMLElement): void {
     // React-specific connection logic
@@ -1003,7 +1014,7 @@ The Odyssey Uplink Protocol provides a zero-configuration approach to framework 
 
 ### 6.1 Automatic Framework Detection
 
-The protocol automatically detects which framework your application is using and sets up the appropriate adapter:
+The protocol automatically detects which framework your application is using (React, Vue, Angular, Svelte, or vanilla JS) and sets up the appropriate adapter:
 
 ```ts
 // Just import this at your app's entry point
@@ -1011,6 +1022,14 @@ import 'odyssey/uplink-auto-init';
 
 // That's it! The protocol will auto-detect your framework and initialize everything
 ```
+
+The auto-detection mechanism checks for global framework objects and initializes the most appropriate adapter:
+
+- Checks for `React` and `ReactDOM` objects for React detection
+- Checks for `Vue` object for Vue.js detection
+- Checks for `ng` or `angular` objects for Angular detection
+- Checks for `svelte` object for Svelte detection
+- Falls back to the vanilla adapter if no framework is detected
 
 ### 6.2 Framework-Specific APIs
 

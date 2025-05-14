@@ -100,8 +100,7 @@ export class AdapterRegistry {
   /**
    * Get the most appropriate adapter for the current environment
    * Will use auto-detection if enabled, otherwise returns the default adapter
-   */
-  public getAppropriateAdapter(): AdapterInterface | undefined {
+   */  public getAppropriateAdapter(): AdapterInterface | undefined {
     if (!this.autoDetectEnabled || !this.adapters.size) {
       return this.getDefaultAdapter();
     }
@@ -114,6 +113,8 @@ export class AdapterRegistry {
         return this.getAdapter('vue') || this.getDefaultAdapter();
       } else if ((window as any)['ng'] || (window as any)['angular']) {
         return this.getAdapter('angular') || this.getDefaultAdapter();
+      } else if ((window as any)['svelte']) {
+        return this.getAdapter('svelte') || this.getDefaultAdapter();
       }
     }
 
