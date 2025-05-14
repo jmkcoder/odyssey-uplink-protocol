@@ -1,4 +1,4 @@
-# Odyssey Uplink Protocol Specification (v0.1)
+# Odyssey Uplink Protocol Specification (v0.3)
 
 A universal frontend protocol for decoupling UI and logic.
 
@@ -1191,35 +1191,31 @@ By providing zero-configuration integration, the Odyssey Uplink Protocol makes i
 
 The Odyssey Uplink Protocol is under active development, with the following planned milestones:
 
-- **v0.1**: Initial Protocol Specification (current)
+- **v0.1**: Initial Protocol Specification (completed)
   - Core interfaces and components
   - Basic bindings and event emitters
   - Lifecycle management
   - Simple adapter system
 
-- **v0.2**: Enhanced Bindings + Computed Values
+- **v0.2**: Enhanced Bindings + Computed Values (completed)
   - Advanced computed bindings with automatic dependency tracking
   - Binding validators
   - Deep object binding with path notation
-  - Form bindings with validation
 
-- **v0.3**: Framework Adapters + Testing Utilities
+- **v0.3**: Framework Adapters + Testing Utilities (current)
   - Comprehensive adapter system for all major frameworks
-  - Advanced testing utilities
-  - Mocking library for controller testing
   - Extended UI context capabilities
+  - Complete API documentation
 
 - **v0.4**: Documentation + Generator Tools
   - Complete API documentation
-  - Code generators for common patterns
-  - Interactive development tools
-  - Visual controller designer
 
 - **v1.0**: Production Ready Release with Full Adapter Support
   - Performance optimizations
   - Tree-shaking support
   - Comprehensive browser compatibility
   - Complete TypeScript support
+  - Form bindings with validation
 
 ## 10. Conclusion
 
