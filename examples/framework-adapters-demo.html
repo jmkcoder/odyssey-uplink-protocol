@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Odyssey Uplink Protocol - Framework Adapters Demo</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+    
+    h1 {
+      border-bottom: 2px solid #3366cc;
+      padding-bottom: 0.5rem;
+    }
+    
+    .adapter-demo {
+      margin: 2rem 0;
+      padding: 1.5rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background-color: #f9f9f9;
+    }
+    
+    code {
+      font-family: 'Cascadia Code', 'Source Code Pro', Consolas, monospace;
+      background-color: #f1f1f1;
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+    }
+    
+    pre {
+      background-color: #f1f1f1;
+      padding: 1rem;
+      border-radius: 6px;
+      overflow: auto;
+    }
+    
+    .tabs {
+      display: flex;
+      margin-bottom: 1rem;
+    }
+    
+    .tab {
+      padding: 0.5rem 1rem;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      background-color: #f1f1f1;
+    }
+    
+    .tab.active {
+      background-color: #3366cc;
+      color: white;
+      border-color: #3366cc;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>Odyssey Uplink Protocol - Framework Adapters Demo</h1>
+  
+  <p>
+    This page demonstrates how to use the framework adapters with the Odyssey Uplink Protocol.
+    Each section below shows how to integrate the same counter controller with different UI frameworks.
+  </p>
+
+  <div class="adapter-demo">
+    <h2>Common Controller Definition</h2>
+    <p>First, let's define a simple counter controller that works across all frameworks:</p>
+    
+    <pre><code>import { TypedController, Binding } from '@odyssey/uplink';
+
+interface CounterBindings {
+  count: Binding<number>;
+}
+
+interface CounterMethods {
+  increment: () => void;
+  decrement: () => void;
+  reset: () => void;
+}
+
+interface CounterEvents {
+  change: EventEmitter<number>;
+}
+
+class CounterController implements TypedController<CounterBindings, CounterMethods, CounterEvents> {
+  bindings = {
+    count: new Binding<number>(0)
+  };
+  
+  methods = {
+    increment: () => {
+      const newValue = this.bindings.count.current + 1;
+      this.bindings.count.update(newValue);
+      this.events.change.emit(newValue);
+    },
+    
+    decrement: () => {
+      const newValue = this.bindings.count.current - 1;
+      this.bindings.count.update(newValue);
+      this.events.change.emit(newValue);
+    },
+    
+    reset: () => {
+      this.bindings.count.update(0);
+      this.events.change.emit(0);
+    }
+  };
+  
+  events = {
+    change: new EventEmitter<number>()
+  };
+}</code></pre>
+  </div>
+  
+  <div class="adapter-demo">
+    <h2>Framework-Specific Integration</h2>
+    
+    <div class="tabs">
+      <div class="tab active" data-tab="react">React</div>
+      <div class="tab" data-tab="vue">Vue</div>
+      <div class="tab" data-tab="angular">Angular</div>
+      <div class="tab" data-tab="svelte">Svelte</div>
+    </div>
+    
+    <div class="tab-content active" id="react-content">
+      <h3>React Integration</h3>
+      <p>Using the <code>useUplink</code> hook in React components:</p>
+      
+      <pre><code>import React from 'react';
+import { useUplink } from '@odyssey/uplink/react';
+import CounterController from './controllers/counter-controller';
+
+export function Counter() {
+  // Create or get a controller instance
+  const { state, methods, Container } = useUplink(new CounterController());
+  
+  return (
+    &lt;Container 
+      onChange={(value) => console.log(`Counter changed to: ${value}`)}
+      className="counter-container"
+    >
+      &lt;h2>Counter: {state.count}&lt;/h2>
+      &lt;div className="buttons">
+        &lt;button onClick={methods.decrement}>-&lt;/button>
+        &lt;button onClick={methods.increment}>+&lt;/button>
+        &lt;button onClick={methods.reset}>Reset&lt;/button>
+      &lt;/div>
+    &lt;/Container>
+  );
+}</code></pre>
+    </div>
+    
+    <div class="tab-content" id="vue-content">
+      <h3>Vue Integration</h3>
+      <p>Using the <code>useUplink</code> composable in Vue components:</p>
+      
+      <pre><code>&lt;template>
+  &lt;Container @change="onChange" class="counter-container">
+    &lt;h2>Counter: {{ state.count }}&lt;/h2>
+    &lt;div class="buttons">
+      &lt;button @click="methods.decrement">-&lt;/button>
+      &lt;button @click="methods.increment">+&lt;/button>
+      &lt;button @click="methods.reset">Reset&lt;/button>
+    &lt;/div>
+  &lt;/Container>
+&lt;/template>
+
+&lt;script>
+import { useUplink } from '@odyssey/uplink/vue';
+import CounterController from './controllers/counter-controller';
+
+export default {
+  setup() {
+    const { state, methods, Container } = useUplink(new CounterController());
+    
+    const onChange = (value) => {
+      console.log(`Counter changed to: ${value}`);
+    };
+    
+    return {
+      state,
+      methods,
+      Container,
+      onChange
+    };
+  }
+};
+&lt;/script></code></pre>
+    </div>
+    
+    <div class="tab-content" id="angular-content">
+      <h3>Angular Integration</h3>
+      <p>Using the <code>useController</code> function and <code>ControllerService</code> in Angular components:</p>
+      
+      <pre><code>// counter.component.ts
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { useController, ControllerService } from '@odyssey/uplink/angular';
+import CounterController from './controllers/counter-controller';
+
+@Component({
+  selector: 'app-counter',
+  template: `
+    &lt;div class="counter-container">
+      &lt;h2>Counter: {{ count }}&lt;/h2>
+      &lt;div class="buttons">
+        &lt;button (click)="decrement()">-&lt;/button>
+        &lt;button (click)="increment()">+&lt;/button>
+        &lt;button (click)="reset()">Reset&lt;/button>
+      &lt;/div>
+    &lt;/div>
+  `
+})
+export class CounterComponent implements OnInit, OnDestroy {
+  // Properties that will be bound to controller state
+  count = 0;
+  
+  // Controller reference
+  private controller: CounterController;
+  
+  constructor(private controllerService: ControllerService) {
+    // Bind controller state to component properties
+    this.controller = useController(new CounterController(), this);
+  }
+  
+  ngOnInit() {
+    // Subscribe to events
+    this.controller.events.change.on((value) => {
+      console.log(`Counter changed to: ${value}`);
+    });
+  }
+  
+  // Methods that delegate to controller
+  increment() {
+    this.controller.methods.increment();
+  }
+  
+  decrement() {
+    this.controller.methods.decrement();
+  }
+  
+  reset() {
+    this.controller.methods.reset();
+  }
+  
+  ngOnDestroy() {
+    // Clean up controller connection
+    this.controllerService.disconnect(this.controller);
+  }
+}</code></pre>
+    </div>
+    
+    <div class="tab-content" id="svelte-content">
+      <h3>Svelte Integration</h3>
+      <p>Using the <code>getController</code> function and <code>connectElement</code> action in Svelte components:</p>
+      
+      <pre><code>&lt;script>
+  import { getController, connectElement } from '@odyssey/uplink/svelte';
+  import CounterController from './controllers/counter-controller';
+  
+  // Get controller with Svelte stores
+  const { controller, stores, methods } = getController(new CounterController());
+  
+  // Destructure stores for reactivity
+  const { count } = stores;
+  
+  // Event handler
+  function onChange(event) {
+    console.log(`Counter changed to: ${event.detail}`);
+  }
+&lt;/script>
+
+&lt;div use:connectElement={controller} 
+     class="counter-container"
+     on:change={onChange}>
+  &lt;h2>Counter: {$count}&lt;/h2>
+  &lt;div class="buttons">
+    &lt;button on:click={methods.decrement}>-&lt;/button>
+    &lt;button on:click={methods.increment}>+&lt;/button>
+    &lt;button on:click={methods.reset}>Reset&lt;/button>
+  &lt;/div>
+&lt;/div></code></pre>
+    </div>
+  </div>
+  
+  <div class="adapter-demo">
+    <h2>Framework-Agnostic Usage</h2>
+    <p>You can also use a framework-agnostic approach that automatically detects which framework you're using:</p>
+    
+    <pre><code>import { useController } from '@odyssey/uplink/hooks';
+import CounterController from './controllers/counter-controller';
+
+// This will use the appropriate hook based on the detected framework
+function createCounter() {
+  // Will return the appropriate hook result based on framework
+  return useController(new CounterController());
+}</code></pre>
+  </div>
+  
+  <script>
+    // Simple tabs implementation
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        // Set active tab
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        // Show corresponding content
+        const tabName = tab.getAttribute('data-tab');
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        document.getElementById(`${tabName}-content`).classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

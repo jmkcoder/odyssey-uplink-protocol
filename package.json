@@ -4,8 +4,7 @@
     "description": "Odyssey Uplink Protocol",
     "main": "dist/cjs/index.js",
     "module": "dist/esm/index.js",
-    "types": "dist/esm/index.d.ts",
-    "exports": {
+    "types": "dist/esm/index.d.ts",    "exports": {
         ".": {
             "import": "./dist/esm/index.js",
             "require": "./dist/cjs/index.js",
@@ -20,6 +19,31 @@
             "import": "./dist/esm/services/integration/react.js",
             "require": "./dist/cjs/services/integration/react.js",
             "types": "./dist/esm/services/integration/react.d.ts"
+        },
+        "./vue": {
+            "import": "./dist/esm/services/integration/vue.js",
+            "require": "./dist/cjs/services/integration/vue.js",
+            "types": "./dist/esm/services/integration/vue.d.ts"
+        },
+        "./angular": {
+            "import": "./dist/esm/services/integration/angular.js",
+            "require": "./dist/cjs/services/integration/angular.js",
+            "types": "./dist/esm/services/integration/angular.d.ts"
+        },
+        "./svelte": {
+            "import": "./dist/esm/services/integration/svelte.js",
+            "require": "./dist/cjs/services/integration/svelte.js",
+            "types": "./dist/esm/services/integration/svelte.d.ts"
+        },
+        "./hooks": {
+            "import": "./dist/esm/hooks.js",
+            "require": "./dist/cjs/hooks.js",
+            "types": "./dist/esm/hooks.d.ts"
+        },
+        "./auto-detect": {
+            "import": "./dist/esm/services/integration/auto-detect.js",
+            "require": "./dist/cjs/services/integration/auto-detect.js",
+            "types": "./dist/esm/services/integration/auto-detect.d.ts"
         }
     },
     "files": [
@@ -32,15 +56,15 @@
         "build": "npm run clean && npm run build:umd && npm run build:cjs && npm run build:esm",
         "build:umd": "webpack --config webpack.lib.js --mode=production",
         "build:esm": "tsc -p tsconfig.esm.json",
-        "build:cjs": "tsc -p tsconfig.cjs.json",
-        "clean": "rimraf dist",
+        "build:cjs": "tsc -p tsconfig.cjs.json",        "clean": "rimraf dist",
         "prepare": "npm run build",
         "dev": "webpack serve --mode development",
         "create-package": "npm publish --access=public",
         "migrate-uplink": "node src/scripts/migrate-uplink.js",
         "demo": "powershell -ExecutionPolicy Bypass -File scripts/open-demo.ps1",
         "test:binding": "powershell -ExecutionPolicy Bypass -File scripts/test-two-way-binding.ps1",
-        "react:demo": "powershell -ExecutionPolicy Bypass -File scripts/open-react-demo.ps1"
+        "react:demo": "powershell -ExecutionPolicy Bypass -File scripts/open-react-demo.ps1",
+        "hooks:demo": "powershell -ExecutionPolicy Bypass -File scripts/open-hooks-demo.ps1"
     },
     "bin": {
         "migrate-uplink": "./dist/scripts/migrate-uplink.js"
@@ -57,7 +81,10 @@
         "@types/react": "^18.0.0 || ^19.0.0",
         "@types/react-dom": "^18.0.0 || ^19.0.0",
         "react": "^18.0.0 || ^19.0.0",
-        "react-dom": "^18.0.0 || ^19.0.0"
+        "react-dom": "^18.0.0 || ^19.0.0",
+        "angular": "^1.8.3",
+        "svelte": "^5.28.6",
+        "vue": "^3.5.13"
     },
     "devDependencies": {
         "@testing-library/dom": "^10.4.0",

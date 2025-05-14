@@ -54,7 +54,6 @@ export declare class AdapterRegistry {
     /**
      * Get the most appropriate adapter for the current environment
      * Will use auto-detection if enabled, otherwise returns the default adapter
-     */
-    getAppropriateAdapter(): AdapterInterface | undefined;
+     */ getAppropriateAdapter(): AdapterInterface | undefined;
 }
 //# sourceMappingURL=adapter-registry.service.d.ts.map

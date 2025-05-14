@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Library Exports</title>
+</head>
+<body>
+    <h1>Testing Library Exports</h1>
+    <pre id="output"></pre>
+
+    <!-- Import the Uplink Protocol -->
+    <script src="../dist/index.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const output = document.getElementById('output');
+            output.textContent = 'UplinkProtocol object keys: ' + Object.keys(window.UplinkProtocol || {}).join(', ');
+            output.textContent += '\n\nObject details: ' + JSON.stringify(window.UplinkProtocol, null, 2);
+            
+            // Check if connectController exists
+            if (window.UplinkProtocol && window.UplinkProtocol.connectController) {
+                output.textContent += '\n\nconnectController exists!';
+            } else {
+                output.textContent += '\n\nconnectController does NOT exist!';
+            }
+        });
+    </script>
+</body>
+</html>

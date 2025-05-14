@@ -51,7 +51,6 @@ module.exports = (env, argv) => {
               options: {
                 postcssOptions: {
                   plugins: [
-                    require('tailwindcss'),
                     require('autoprefixer'),
                   ],
                 },
@@ -69,7 +68,6 @@ module.exports = (env, argv) => {
               options: {
                 postcssOptions: {
                   plugins: [
-                    require('tailwindcss'),
                     require('autoprefixer'),
                   ],
                 },

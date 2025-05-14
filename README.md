@@ -657,41 +657,108 @@ customElements.define('date-picker', DatePickerElement);
 
 ### 4.2 Framework Integration
 
+Odyssey Uplink Protocol provides seamless integration with all major UI frameworks including React, Vue, Angular, and Svelte. Each framework has its own adapter and hook that allows for a consistent developer experience.
+
 #### React Integration
 
 ```tsx
-// React adapter example
-function useController<T extends Controller>(controller: T): T {
-  const [, forceUpdate] = useState({});
-  
-  useEffect(() => {
-    // Subscribe to all bindings
-    const unsubs = Object.values(controller.bindings).map(
-      binding => binding.subscribe(() => forceUpdate({}))
-    );
-    
-    // If controller has lifecycle methods, call them
-    if (controller.connect) {
-      controller.connect();
-    }
-    
-    return () => {
-      // Clean up subscriptions
-      unsubs.forEach(unsub => unsub());
-      
-      // If controller has lifecycle methods, call them
-      if (controller.disconnect) {
-        controller.disconnect();
-      }
-    };
-  }, [controller]);
-  
-  return controller;
-}
+import { useUplink } from '@odyssey/uplink/react';
+import CounterController from './controllers/counter-controller';
 
-// Using in a component
-function DatePicker() {
-  const controller = useController(new DatePickerController());
+function Counter() {
+  // Initialize with a controller instance, factory function, or controller name
+  const { state, methods, Container } = useUplink(new CounterController());
+  
+  return (
+    <Container onIncrement={(val) => console.log(`Counter: ${val}`)}>
+      <div>Count: {state.count}</div>
+      <button onClick={methods.increment}>+</button>
+    </Container>
+  );
+}
+```
+
+#### Vue Integration
+
+```vue
+<template>
+  <Container>
+    <div>Count: {{ state.count }}</div>
+    <button @click="methods.increment">+</button>
+  </Container>
+</template>
+
+<script>
+import { useUplink } from '@odyssey/uplink/vue';
+import CounterController from './controllers/counter-controller';
+
+export default {
+  setup() {
+    const { state, methods, Container } = useUplink(new CounterController());
+    return { state, methods, Container };
+  }
+}
+</script>
+```
+
+#### Angular Integration
+
+```typescript
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { useController, ControllerService } from '@odyssey/uplink/angular';
+import CounterController from './controllers/counter-controller';
+
+@Component({
+  selector: 'app-counter',
+  template: `
+    <div>Count: {{ count }}</div>
+    <button (click)="increment()">+</button>
+  `
+})
+export class CounterComponent implements OnInit, OnDestroy {
+  count = 0;
+  private controller: CounterController;
+  
+  constructor(private controllerService: ControllerService) {
+    // Binds controller state to component properties
+    this.controller = useController(new CounterController(), this);
+  }
+  
+  increment() {
+    this.controller.methods.increment();
+  }
+  
+  ngOnDestroy() {
+    this.controllerService.disconnect(this.controller);
+  }
+}
+```
+
+#### Svelte Integration
+
+```svelte
+<script>
+  import { getController, connectElement } from '@odyssey/uplink/svelte';
+  import CounterController from './controllers/counter-controller';
+  
+  // Get controller with Svelte stores
+  const { controller, stores, methods } = getController(new CounterController());
+  
+  // Destructure stores for reactivity
+  const { count } = stores;
+</script>
+
+<div use:connectElement={controller}>
+  <div>Count: {$count}</div>
+  <button on:click={methods.increment}>+</button>
+</div>
+```
+
+#### Framework-Agnostic Usage
+
+```typescript
+import { useController } from '@odyssey/uplink/hooks';
+import CounterController from './controllers/counter-controller';
   
   return (
     <div className="date-picker">
@@ -1033,12 +1100,21 @@ The auto-detection mechanism checks for global framework objects and initializes
 
 ### 6.2 Framework-Specific APIs
 
-Each supported framework provides a tailored API that feels native to that framework's patterns:
+Each supported framework provides a tailored API that feels native to that framework's patterns. The Odyssey Uplink Protocol includes framework-specific hooks for React, Vue, Angular, and Svelte.
+
+#### Framework Integration Hooks
+
+- **React**: `useUplink` hook for React components
+- **Vue**: `useUplink` composable for Vue components
+- **Angular**: `useController` function and `ControllerService` for Angular components
+- **Svelte**: `getController` and `connectElement` utilities for Svelte components
+
+For detailed examples of each framework integration, see the [Framework Hooks documentation](./docs/FRAMEWORK_HOOKS.md).
 
 #### React Integration
 
 ```tsx
-import { useUplink } from 'odyssey/services/integration';
+import { useUplink } from 'odyssey/services/integration/react';
 import { CounterController } from './counter.controller';
 
 function Counter() {
@@ -1061,21 +1137,20 @@ function Counter() {
 
 ```vue
 <template>
-  <div ref="containerRef">
+  <Container>
     <div>Count: {{ state.count }}</div>
     <button @click="methods.increment">+</button>
     <button @click="methods.decrement">-</button>
-  </div>
+  </Container>
 </template>
 
 <script>
-import { useUplink } from 'odyssey/services/integration';
+import { useUplink } from 'odyssey/services/integration/vue';
 import { CounterController } from './counter.controller';
 
-export default {
-  setup() {
-    const { state, methods, containerRef } = useUplink(new CounterController());
-    return { state, methods, containerRef };
+export default {  setup() {
+    const { state, methods, Container } = useUplink(new CounterController());
+    return { state, methods, Container };
   }
 }
 </script>
@@ -1084,26 +1159,43 @@ export default {
 #### Angular Integration
 
 ```typescript
-import { Component } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { useController, ControllerService } from 'odyssey/services/integration/angular';
 import { CounterController } from './counter.controller';
 
 @Component({
   selector: 'app-counter',
   template: `
-    <uplink-container [controller]="controller" (increment)="onIncrement($event)">
-      <ng-template let-state="state" let-methods="methods">
-        <div>Count: {{ state.count }}</div>
-        <button (click)="methods.increment()">+</button>
-        <button (click)="methods.decrement()">-</button>
-      </ng-template>
-    </uplink-container>
-  `
+    <div>
+      <div>Count: {{ count }}</div>
+      <button (click)="increment()">+</button>
+      <button (click)="decrement()">-</button>
+    </div>
+  `,
+  providers: [ControllerService]
 })
-export class CounterComponent {
-  controller = new CounterController();
+export class CounterComponent implements OnInit {
+  count = 0;
+  private controller: CounterController;
   
-  onIncrement(value: number) {
-    console.log(`Count: ${value}`);
+  constructor(
+    private controllerService: ControllerService,
+    private cdr: ChangeDetectorRef
+  ) {}
+  
+  ngOnInit() {
+    // Initialize controller and bind to component properties
+    this.controller = useController(new CounterController(), this, {
+      trackBindings: ['count']
+    });
+  }
+  
+  increment() {
+    this.controller.methods.increment();
+  }
+  
+  decrement() {
+    this.controller.methods.decrement();
   }
 }
 ```
@@ -1112,17 +1204,41 @@ export class CounterComponent {
 
 ```svelte
 <script>
-  import { useUplink } from 'odyssey/services/integration';
+  import { getController, connectElement } from 'odyssey/services/integration/svelte';
   import { CounterController } from './counter.controller';
   
-  const { state, methods, element } = useUplink(new CounterController());
+  // Get a controller with Svelte stores for reactive bindings
+  const { controller, stores, methods } = getController(new CounterController());
+  
+  // Reactive access to store values with $ prefix
+  $: count = $stores.count;
 </script>
 
-<div bind:this={$element}>
-  <div>Count: {$state.count}</div>
+<div use:connectElement={controller}>
+  <div>Count: {count}</div>
   <button on:click={methods.increment}>+</button>
   <button on:click={methods.decrement}>-</button>
 </div>
+```
+
+#### Framework-Agnostic Approach
+
+If you're building libraries that need to work across multiple frameworks, you can use the framework-agnostic `getFrameworkHook()` function:
+
+```typescript
+import { getFrameworkHook } from 'odyssey/services/integration';
+import { CounterController } from './counter.controller';
+
+function createCounter(element) {
+  // Get the appropriate hook for the current framework (React, Vue, Angular, Svelte)
+  const useController = getFrameworkHook();
+  
+  // Use the framework-specific hook with a consistent API
+  const result = useController(new CounterController());
+  
+  // The result structure will be framework-appropriate
+  return result;
+}
 ```
 
 ### 6.3 Controller Factory for Dependency Management
