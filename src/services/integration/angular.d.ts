@@ -42,6 +42,7 @@ export declare class UplinkControllerDirective {
  * Service that manages controllers in Angular applications
  */
 export declare class ControllerService {
+    private eventUnsubscribes;
     /**
      * Get a controller instance by name or create one from the provided class
      */
@@ -54,12 +55,19 @@ export declare class ControllerService {
      * Disconnect a controller
      */
     disconnect(controller: Controller): void;
+    /**
+     * Connect controller events to component outputs
+     * @param controller The controller with events
+     * @param component The Angular component with EventEmitter outputs
+     */
+    connectEvents<T extends TypedController>(controller: T, component: any): void;
 }
 /**
  * Options for the useController function
  */
 export interface UseControllerOptions {
     trackBindings?: string[] | 'all';
+    autoConnectEvents?: boolean;
 }
 /**
  * Function to create a property-bound controller
@@ -71,10 +79,12 @@ export interface UseControllerOptions {
  *   template: `
  *     <div>Count: {{ count }}</div>
  *     <button (click)="increment()">+</button>
- *   `
+ *   `,
+ *   outputs: ['change'] // Event corresponding to controller's 'change' event
  * })
  * export class CounterComponent implements OnInit, OnDestroy {
  *   count = 0;
+ *   change = new EventEmitter<number>();
  *
  *   private controller: CounterController;
  *   private subscription?: () => void;

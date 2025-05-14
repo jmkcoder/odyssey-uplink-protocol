@@ -67,6 +67,9 @@ export class UplinkControllerDirective {
  * Service that manages controllers in Angular applications
  */
 export class ControllerService {
+  // Store event unsubscribe functions
+  private eventUnsubscribes = new Map<Controller, Array<() => void>>();
+
   /**
    * Get a controller instance by name or create one from the provided class
    */
@@ -98,7 +101,43 @@ export class ControllerService {
    * Disconnect a controller
    */
   disconnect(controller: Controller): void {
+    // Clean up event subscriptions
+    if (this.eventUnsubscribes.has(controller)) {
+      const unsubscribes = this.eventUnsubscribes.get(controller) || [];
+      unsubscribes.forEach(unsub => unsub());
+      this.eventUnsubscribes.delete(controller);
+    }
+    
     disconnectController(controller);
+  }
+
+  /**
+   * Connect controller events to component outputs
+   * @param controller The controller with events
+   * @param component The Angular component with EventEmitter outputs
+   */
+  connectEvents<T extends TypedController>(
+    controller: T, 
+    component: any
+  ): void {
+    if (!controller.events) return;
+    
+    const unsubscribes: Array<() => void> = [];
+    
+    Object.entries(controller.events).forEach(([eventName, emitter]) => {
+      // Check if component has an EventEmitter for this event
+      if (component[eventName] && typeof component[eventName].emit === 'function') {
+        // Subscribe to controller event and emit through Angular EventEmitter
+        const unsubscribe = emitter.subscribe((data: any) => {
+          component[eventName].emit(data);
+        });
+        
+        unsubscribes.push(unsubscribe);
+      }
+    });
+    
+    // Store unsubscribe functions for cleanup
+    this.eventUnsubscribes.set(controller, unsubscribes);
   }
 }
 
@@ -107,6 +146,7 @@ export class ControllerService {
  */
 export interface UseControllerOptions {
   trackBindings?: string[] | 'all';
+  autoConnectEvents?: boolean;
 }
 
 /**
@@ -119,10 +159,12 @@ export interface UseControllerOptions {
  *   template: `
  *     <div>Count: {{ count }}</div>
  *     <button (click)="increment()">+</button>
- *   `
+ *   `,
+ *   outputs: ['change'] // Event corresponding to controller's 'change' event
  * })
  * export class CounterComponent implements OnInit, OnDestroy {
  *   count = 0;
+ *   change = new EventEmitter<number>();
  *   
  *   private controller: CounterController;
  *   private subscription?: () => void;
@@ -176,6 +218,11 @@ export function useController<T extends TypedController>(
       });
     }
   });
+  
+  // Connect events to component outputs if auto-connect is enabled (default: true)
+  if (options.autoConnectEvents !== false) {
+    controllerService.connectEvents(controller, component);
+  }
   
   return controller;
 }

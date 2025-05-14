@@ -5,6 +5,7 @@ import { connectController, disconnectController } from '../../uplink/uplink-pro
 import { getControllerFactory } from '../../uplink/models/controller-factory';
 import './auto-detect'; // Ensure adapter is initialized
 import React from 'react';
+import { EventEmitter } from '../../uplink';
 
 /**
  * Props for UplinkContainer
@@ -61,6 +62,7 @@ interface UseUplinkResult<T extends TypedController> {
   controller: T;
   state: ControllerState<T>;
   methods: T['methods'] extends Record<string, (...args: any[]) => any> ? T['methods'] : Record<string, never>;
+  events: T['events'] extends Record<string, EventEmitter<any>> ? T['events'] : Record<string, never>;
   Container: React.FC<{ children: ReactNode } & ControllerEventHandlers<T> & Record<string, any>>;
 }
 
@@ -136,12 +138,36 @@ export function useUplink<T extends TypedController>(
 
   // Create Container component bound to this controller
   const Container: React.FC<{ children: ReactNode; [key: string]: any }> = ({ children, ...props }) => {
+    // Set up direct event subscriptions if controller has events
+    useEffect(() => {
+      if (controller.events) {
+        const unsubscribes = Object.entries(controller.events).map(([eventName, emitter]) => {
+          // Convert event name to React prop name format (e.g., "increment" -> "onIncrement")
+          const propName = `on${eventName.charAt(0).toUpperCase() + eventName.slice(1)}`;
+          
+          // If the prop for this event exists and is a function, subscribe to the event
+          if (typeof props[propName] === 'function') {
+            return emitter.subscribe((data) => {
+              props[propName](data);
+            });
+          }
+          return () => {};
+        });
+        
+        return () => {
+          unsubscribes.forEach(unsub => unsub());
+        };
+      }
+    }, [props]);
+
     return <UplinkContainer controller={controller} {...props}>{children}</UplinkContainer>;
   };
+
   return {
     controller,
     state: state as ControllerState<T>,
     methods: (controller.methods || {}) as T['methods'] extends Record<string, (...args: any[]) => any> ? T['methods'] : Record<string, never>,
+    events: (controller.events || {}) as T['events'] extends Record<string, EventEmitter<any>> ? T['events'] : Record<string, never>,
     Container
   };
 }

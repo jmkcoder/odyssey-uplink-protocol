@@ -1,6 +1,7 @@
 import { Component } from 'vue';
 import { Controller } from '../../uplink/interfaces/controller.interface';
 import { TypedController, ControllerState } from '../../uplink/interfaces/framework-controller.interface';
+import { EventEmitter } from '../../uplink/models/event-emitter';
 import './auto-detect';
 /**
  * Props for UplinkContainer
@@ -35,14 +36,14 @@ interface UseUplinkResult<T extends TypedController> {
     controller: T;
     state: ControllerState<T>;
     methods: T['methods'] extends Record<string, (...args: any[]) => any> ? T['methods'] : Record<string, never>;
+    events: T['events'] extends Record<string, EventEmitter<any>> ? T['events'] : Record<string, never>;
     Container: Component;
 }
 /**
  * Vue composable for using Uplink controllers in Vue components
- *
- * @example
+ *  * @example
  * <template>
- *   <Container>
+ *   <Container @increment="onIncrement">
  *     <div>Count: {{ state.count }}</div>
  *     <button @click="methods.increment">+</button>
  *   </Container>
@@ -54,8 +55,17 @@ interface UseUplinkResult<T extends TypedController> {
  *
  * export default {
  *   setup() {
- *     const { state, methods, Container } = useUplink(new CounterController());
- *     return { state, methods, Container };
+ *     const { state, methods, events, Container } = useUplink(new CounterController());
+ *
+ *     // You can also subscribe to events directly
+ *     onMounted(() => {
+ *       events.increment.subscribe((val) => {
+ *         console.log(`Counter incremented to: ${val}`);
+ *       });
+ *     });
+ *
+ *     const onIncrement = (val) => console.log(`Counter: ${val}`);
+ *     return { state, methods, Container, onIncrement };
  *   }
  * }
  * </script>

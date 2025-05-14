@@ -3,6 +3,7 @@ import { Controller } from '../../uplink/interfaces/controller.interface';
 import { TypedController, ControllerState, ControllerEventHandlers } from '../../uplink/interfaces/framework-controller.interface';
 import './auto-detect';
 import React from 'react';
+import { EventEmitter } from '../../uplink';
 /**
  * Props for UplinkContainer
  */
@@ -29,6 +30,7 @@ interface UseUplinkResult<T extends TypedController> {
     controller: T;
     state: ControllerState<T>;
     methods: T['methods'] extends Record<string, (...args: any[]) => any> ? T['methods'] : Record<string, never>;
+    events: T['events'] extends Record<string, EventEmitter<any>> ? T['events'] : Record<string, never>;
     Container: React.FC<{
         children: ReactNode;
     } & ControllerEventHandlers<T> & Record<string, any>>;

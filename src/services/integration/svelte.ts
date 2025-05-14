@@ -47,20 +47,77 @@ interface UseUplinkResult<T extends TypedController> {
   stores: StoreMap;
   state: ControllerState<T>; // Adding state mapping that matches the controller's current state
   methods: T['methods'] extends Record<string, (...args: any[]) => any> ? T['methods'] : Record<string, never>;
+  events: T['events'] extends Record<string, any> ? T['events'] : Record<string, never>; // Direct access to controller events
+  eventHandlers: Record<string, (event: CustomEvent) => void>; // Event handlers for Svelte's on:event syntax
 }
 
 /**
  * Connect an element to a controller and handle cleanup
  */
-export function connectElement(node: HTMLElement, controller: Controller): { destroy: () => void } {
+export function connectElement(node: HTMLElement, controller: Controller): { 
+  destroy: () => void,
+  update?: (params: { controller: Controller }) => void
+} {
   // Store Svelte component reference for event handling
-  (node as any).__svelteInstance = { node };
+  (node as any).__svelteInstance = { 
+    node,
+    dispatchEvent: (node.dispatchEvent && node.dispatchEvent.bind(node)) || null
+  };
   
   // Connect the controller
   connectController(controller, node, 'svelte');
+  
+  // Set up direct event handlers for the controller
+  const eventUnsubscribes: Array<() => void> = [];
+  
+  if (controller.events) {
+    Object.entries(controller.events).forEach(([eventName, emitter]) => {
+      const unsubscribe = emitter.subscribe((data) => {
+        // Create and dispatch a custom event
+        const event = new CustomEvent(eventName, {
+          detail: data,
+          bubbles: true
+        });
+        node.dispatchEvent(event);
+      });
+      eventUnsubscribes.push(unsubscribe);
+    });
+  }
 
   return {
+    update(params: { controller: Controller }) {
+      // Clean up old subscriptions
+      eventUnsubscribes.forEach(unsub => unsub());
+      eventUnsubscribes.length = 0;
+      
+      // Disconnect old controller
+      disconnectController(controller);
+      
+      // Update controller reference
+      controller = params.controller;
+      
+      // Connect new controller
+      connectController(controller, node, 'svelte');
+      
+      // Set up new event handlers
+      if (controller.events) {
+        Object.entries(controller.events).forEach(([eventName, emitter]) => {
+          const unsubscribe = emitter.subscribe((data) => {
+            const event = new CustomEvent(eventName, {
+              detail: data,
+              bubbles: true
+            });
+            node.dispatchEvent(event);
+          });
+          eventUnsubscribes.push(unsubscribe);
+        });
+      }
+    },
     destroy() {
+      // Clean up event subscriptions
+      eventUnsubscribes.forEach(unsub => unsub());
+      
+      // Disconnect controller
       disconnectController(controller);
     }
   };
@@ -70,17 +127,23 @@ export function connectElement(node: HTMLElement, controller: Controller): { des
  * Hook for using Uplink controllers in Svelte components
  *  * @example
  * <script>
- *   import { getController } from 'odyssey/uplink/svelte';
+ *   import { getController, connectElement } from 'odyssey/uplink/svelte';
  *   import CounterController from './controllers/counter-controller';
- *   
- *   const { stores, methods, state } = getController(new CounterController());
+ *    *   const { stores, methods, state, events, eventHandlers } = getController(new CounterController());
  *   const count = stores.count;
  *   
  *   // You can access the initial state values directly
  *   console.log("Initial count:", state.count);
+ *   
+ *   // You can also subscribe to events directly
+ *   onMount(() => {
+ *     events.increment.subscribe((val) => {
+ *       console.log(`Counter incremented to: ${val}`);
+ *     });
+ *   });
  * </script>
  * 
- * <div use:connectElement={controller}>
+ * <div use:connectElement={controller} on:increment={eventHandlers.increment}
  *   <div>Count: {$count}</div>
  *   <button on:click={methods.increment}>+</button>
  * </div>
@@ -102,7 +165,8 @@ export function getController<T extends TypedController>(
     // Use the provided controller instance
     controller = controllerInput;
   }
-    // Create stores for each binding
+    
+  // Create stores for each binding
   const stores: StoreMap = {};
   const svelteAdapter = getSvelteAdapter();
   
@@ -143,11 +207,24 @@ export function getController<T extends TypedController>(
       }
     }
   });
+  
   // Create state object from current binding values
   const state: Partial<ControllerState<T>> = {};
   Object.entries(controller.bindings).forEach(([key, binding]) => {
     (state as any)[key] = binding.current;
   });
+
+  // Create event handlers for controller events
+  const eventHandlers: Record<string, (event: CustomEvent) => void> = {};
+  
+  if (controller.events) {
+    Object.keys(controller.events).forEach(eventName => {
+      eventHandlers[eventName] = (event: CustomEvent) => {
+        // This handler can be used in on:eventName={eventHandlers.eventName}
+        console.log(`Event ${eventName} triggered with data:`, event.detail);
+      };
+    });
+  }
 
   // Setup cleanup on component destroy
   onDestroy(() => {
@@ -155,11 +232,12 @@ export function getController<T extends TypedController>(
       disconnectController(controller);
     }
   });
-  
-  return {
+    return {
     controller,
     stores,
     state: state as ControllerState<T>,
-    methods: (controller.methods || {}) as T['methods'] extends Record<string, (...args: any[]) => any> ? T['methods'] : Record<string, never>
+    methods: (controller.methods || {}) as T['methods'] extends Record<string, (...args: any[]) => any> ? T['methods'] : Record<string, never>,
+    events: (controller.events || {}) as T['events'] extends Record<string, any> ? T['events'] : Record<string, never>,
+    eventHandlers
   };
 }
