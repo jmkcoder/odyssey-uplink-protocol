@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uplink Protocol Demo</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 40px;
+      color: #333;
+      background-color: #f7f7f7;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    h1 {
+      margin-top: 0;
+      color: #2c3e50;
+    }
+    
+    .counter {
+      display: flex;
+      align-items: center;
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+    }
+    
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    button:hover {
+      background-color: #2980b9;
+    }
+    
+    .counter-value {
+      font-size: 24px;
+      margin: 0 20px;
+      min-width: 40px;
+      text-align: center;
+    }
+    
+    .log {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f5f5f5;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      height: 120px;
+      overflow-y: auto;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Uplink Protocol Demo</h1>      <div class="counter" id="counter-1">
+      <button id="decrement-1">-</button>
+      <div class="counter-value">0</div>
+      <button id="increment-1">+</button>
+      <button id="update-5-1" style="margin-left: 10px; background-color: #2ecc71;">+5</button>
+      <button id="update-neg5-1" style="margin-left: 10px; background-color: #e74c3c;">-5</button>
+      <div style="margin-left: 20px; display: flex; align-items: center;">
+        <label style="margin-right: 10px;">Direct input:</label>
+        <input type="number" id="direct-input-1" style="width: 60px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" value="0">
+      </div>
+    </div>
+    
+    <div class="counter" id="counter-2">
+      <button id="decrement-2">-</button>
+      <div class="counter-value">0</div>
+      <button id="increment-2">+</button>
+      <button id="update-5-2" style="margin-left: 10px; background-color: #2ecc71;">+5</button>
+      <button id="update-neg5-2" style="margin-left: 10px; background-color: #e74c3c;">-5</button>
+      <div style="margin-left: 20px; display: flex; align-items: center;">
+        <label style="margin-right: 10px;">Direct input:</label>
+        <input type="number" id="direct-input-2" style="width: 60px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" value="0">
+      </div>
+    </div>
+    
+    <div class="log" id="log"></div>
+  </div>
+  
+  <!-- Import Uplink Protocol -->
+  <script src="../dist/index.js"></script>
+  <script src="../dist/uplink-auto-init.js"></script>
+  
+  <script>
+    // Logging utility
+    function log(message) {
+      const logEl = document.getElementById('log');
+      const entry = document.createElement('div');
+      entry.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+      logEl.appendChild(entry);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {      // Create controllers
+      const createCounterController = (id) => {
+        const controller = {
+          bindings: {
+            count: {
+              current: 0,
+              subscribe: function(callback) {
+                this._callback = callback;
+                return () => { this._callback = null; };
+              },
+              set: function(value) {
+                this.current = value;
+                if (this._callback) this._callback(value);
+              }
+            }
+          },
+            methods: {
+            increment: function() {
+              const newValue = controller.bindings.count.current + 1;
+              controller.bindings.count.set(newValue);
+              log(`Counter ${id} incremented to ${newValue}`);
+              return newValue;
+            },
+            
+            decrement: function() {
+              const newValue = controller.bindings.count.current - 1;
+              controller.bindings.count.set(newValue);
+              log(`Counter ${id} decremented to ${newValue}`);
+              return newValue;
+            },
+            
+            // Method with parameters
+            updateCount: function(amount, message) {
+              const newValue = controller.bindings.count.current + amount;
+              controller.bindings.count.set(newValue);
+              log(`Counter ${id} ${message}: ${newValue} (changed by ${amount})`);
+              return newValue;
+            }
+          }
+        };
+        return controller;
+      };
+      
+      // Create and connect controllers
+      const counter1 = createCounterController(1);
+      const counter2 = createCounterController(2);
+      
+      // Connect controllers to DOM elements
+      const { connectController, ControllerAdapter } = UplinkProtocol;
+      
+      const adapter1 = new ControllerAdapter(counter1);
+      const adapter2 = new ControllerAdapter(counter2);
+      
+      adapter1.connect(document.getElementById('counter-1'));
+      adapter2.connect(document.getElementById('counter-2'));
+        // Watch for count changes
+      adapter1.watchProperty('count', (newValue) => {
+        document.querySelector('#counter-1 .counter-value').textContent = newValue;
+        document.querySelector('#direct-input-1').value = newValue;
+      });
+      
+      adapter2.watchProperty('count', (newValue) => {
+        document.querySelector('#counter-2 .counter-value').textContent = newValue;
+        document.querySelector('#direct-input-2').value = newValue;
+      });
+        // Set up button click handlers
+      document.getElementById('increment-1').addEventListener('click', () => {
+        adapter1.callMethod('increment');
+      });
+      
+      document.getElementById('decrement-1').addEventListener('click', () => {
+        adapter1.callMethod('decrement');
+      });
+      
+      document.getElementById('update-5-1').addEventListener('click', () => {
+        // Call method with parameters: amount=5, message="increased by 5"
+        adapter1.callMethod('updateCount', [5, "increased by 5"]);
+      });
+      
+      document.getElementById('update-neg5-1').addEventListener('click', () => {
+        // Call method with parameters: amount=-5, message="decreased by 5"
+        adapter1.callMethod('updateCount', [-5, "decreased by 5"]);
+      });
+      
+      document.getElementById('increment-2').addEventListener('click', () => {
+        adapter2.callMethod('increment');
+      });
+      
+      document.getElementById('decrement-2').addEventListener('click', () => {
+        adapter2.callMethod('decrement');
+      });
+      
+      document.getElementById('update-5-2').addEventListener('click', () => {
+        // Call method with parameters: amount=5, message="increased by 5"
+        adapter2.callMethod('updateCount', [5, "increased by 5"]);
+      });
+        document.getElementById('update-neg5-2').addEventListener('click', () => {
+        // Call method with parameters: amount=-5, message="decreased by 5"
+        adapter2.callMethod('updateCount', [-5, "decreased by 5"]);
+      });
+      
+      // Set up two-way binding for direct input fields
+      document.getElementById('direct-input-1').addEventListener('input', (event) => {
+        const value = parseInt(event.target.value, 10);
+        if (!isNaN(value)) {
+          // Update the binding directly
+          adapter1.updateProperty('count', value);
+          log(`Counter 1 directly set to ${value}`);
+        }
+      });
+      
+      document.getElementById('direct-input-2').addEventListener('input', (event) => {
+        const value = parseInt(event.target.value, 10);
+        if (!isNaN(value)) {
+          // Update the binding directly
+          adapter2.updateProperty('count', value);
+          log(`Counter 2 directly set to ${value}`);
+        }
+      });
+      
+      log('Uplink Protocol initialized successfully');
+    });
+  </script>
+</body>
+</html>
