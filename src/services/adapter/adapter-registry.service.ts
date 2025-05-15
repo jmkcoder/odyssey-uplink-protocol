@@ -4,11 +4,9 @@ import { AdapterInterface } from './adapter.interface';
  * AdapterRegistry is a singleton service that manages all framework adapters
  * and provides a central point for controllers to connect to the appropriate adapter.
  */
-export class AdapterRegistry {
-  private static instance: AdapterRegistry;
+export class AdapterRegistry {  private static instance: AdapterRegistry;
   private adapters: Map<string, AdapterInterface> = new Map();
   private defaultAdapter: string | null = null;
-  private autoDetectEnabled = true;
 
   private constructor() {
     // Private constructor to prevent direct instantiation
@@ -87,38 +85,27 @@ export class AdapterRegistry {
    */
   public getDefaultAdapter(): AdapterInterface | undefined {
     return this.defaultAdapter ? this.adapters.get(this.defaultAdapter) : undefined;
-  }
-
-  /**
-   * Enable or disable auto detection of the framework environment
-   * @param enabled Whether auto detection should be enabled
+  }  /**
+   * This method is a placeholder for framework-specific packages
+   * In the core package, auto detection is not used
+   * @param _enabled Whether auto detection should be enabled (ignored in core package)
    */
-  public setAutoDetect(enabled: boolean): void {
-    this.autoDetectEnabled = enabled;
+  public setAutoDetect(_enabled: boolean): void {
+    // No-op in core package
+    // Framework-specific packages will override this
   }
-
   /**
    * Get the most appropriate adapter for the current environment
-   * Will use auto-detection if enabled, otherwise returns the default adapter
-   */  public getAppropriateAdapter(): AdapterInterface | undefined {
-    if (!this.autoDetectEnabled || !this.adapters.size) {
-      return this.getDefaultAdapter();
-    }
-
-    // Auto-detect the framework based on global objects
-    if (typeof window !== 'undefined') {
-      if ((window as any)['React'] && (window as any)['ReactDOM']) {
-        return this.getAdapter('react') || this.getDefaultAdapter();
-      } else if ((window as any)['Vue']) {
-        return this.getAdapter('vue') || this.getDefaultAdapter();
-      } else if ((window as any)['ng'] || (window as any)['angular']) {
-        return this.getAdapter('angular') || this.getDefaultAdapter();
-      } else if ((window as any)['svelte']) {
-        return this.getAdapter('svelte') || this.getDefaultAdapter();
-      }
-    }
-
-    // Fall back to default adapter if auto-detection fails
+   * 
+   * Note: In the core package, this always returns the default adapter (vanilla).
+   * Framework-specific detection is implemented in each framework package:
+   * - @uplink-protocol/react
+   * - @uplink-protocol/vue
+   * - @uplink-protocol/angular
+   * - @uplink-protocol/svelte
+   */
+  public getAppropriateAdapter(): AdapterInterface | undefined {
+    // In the core package, we always return the default adapter
     return this.getDefaultAdapter();
   }
 }

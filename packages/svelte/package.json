@@ -1,0 +1,35 @@
+﻿{
+  "name": "@uplink-protocol/svelte",
+  "version": "0.0.1",
+  "description": "Odyssey Uplink Protocol Svelte Integration",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "webpack --config webpack.config.js --mode=production",
+    "clean": "rimraf dist",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "web-components",
+    "ui",
+    "components",
+    "svelte"
+  ],
+  "author": "",
+  "license": "ISC",
+  "peerDependencies": {
+    "@uplink-protocol/core": "file:../../src",
+    "svelte": "^3.59.2"
+  },
+  "devDependencies": {
+    "svelte": "^3.59.2",
+    "rimraf": "^5.0.1",
+    "ts-loader": "^9.4.2",
+    "typescript": "^5.0.4",
+    "webpack": "^5.82.0",
+    "webpack-cli": "^5.1.1"
+  }
+}

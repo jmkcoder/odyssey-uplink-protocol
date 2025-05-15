@@ -1,6 +1,7 @@
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
+const { execSync } = require('child_process');
 
 module.exports = (env, argv) => {
   const isProd = argv.mode === 'production';
@@ -20,18 +21,16 @@ module.exports = (env, argv) => {
         },
       })],
     },
-  };
-  // Config for generating main UMD build
+  };  // Config for generating main UMD build
   const umdConfig = {
     ...baseConfig,
-    entry: './src/index.ts', 
-    output: {
+    entry: './src/index.ts',
+    output:{
       path: path.resolve(__dirname, 'dist'),
-      filename: 'index.js',
+      filename: '[name].js',
       library: {
         name: 'UplinkProtocol',
         type: 'umd',
-        export: 'default',
       },
       umdNamedDefine: true,
       globalObject: 'this',
@@ -106,10 +105,10 @@ module.exports = (env, argv) => {
         commonjs: 'react-dom',
         commonjs2: 'react-dom',
         amd: 'ReactDOM',
-        root: 'ReactDOM',      }
+        root: 'ReactDOM',
+      },
     },
-  };
-  // Config for the zero-configuration auto-init bundle
+  };  // Config for the zero-configuration auto-init bundle
   const autoInitConfig = {
     ...baseConfig,
     entry: './src/uplink-auto-init.ts',
@@ -125,7 +124,22 @@ module.exports = (env, argv) => {
     },
     module: umdConfig.module,
     resolve: umdConfig.resolve,
-    plugins: umdConfig.plugins,
+    plugins: [
+      ...umdConfig.plugins,
+      {
+        apply: (compiler) => {
+          compiler.hooks.afterEmit.tap('GenerateTypeDeclarations', () => {
+            console.log('Generating TypeScript declarations for UMD build...');
+            try {
+              execSync('tsc -p tsconfig.declarations.json', { stdio: 'inherit' });
+              console.log('TypeScript declarations generated successfully.');
+            } catch (error) {
+              console.error('Error generating TypeScript declarations:', error);
+            }
+          });
+        },
+      }
+    ],
     externals: umdConfig.externals
   };
   

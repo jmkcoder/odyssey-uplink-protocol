@@ -7,7 +7,6 @@ export declare class AdapterRegistry {
     private static instance;
     private adapters;
     private defaultAdapter;
-    private autoDetectEnabled;
     private constructor();
     /**
      * Get the singleton instance of AdapterRegistry
@@ -45,15 +44,22 @@ export declare class AdapterRegistry {
     /**
      * Get the default adapter
      */
-    getDefaultAdapter(): AdapterInterface | undefined;
-    /**
-     * Enable or disable auto detection of the framework environment
-     * @param enabled Whether auto detection should be enabled
+    getDefaultAdapter(): AdapterInterface | undefined; /**
+     * This method is a placeholder for framework-specific packages
+     * In the core package, auto detection is not used
+     * @param _enabled Whether auto detection should be enabled (ignored in core package)
      */
-    setAutoDetect(enabled: boolean): void;
+    setAutoDetect(_enabled: boolean): void;
     /**
      * Get the most appropriate adapter for the current environment
-     * Will use auto-detection if enabled, otherwise returns the default adapter
-     */ getAppropriateAdapter(): AdapterInterface | undefined;
+     *
+     * Note: In the core package, this always returns the default adapter (vanilla).
+     * Framework-specific detection is implemented in each framework package:
+     * - @uplink-protocol/react
+     * - @uplink-protocol/vue
+     * - @uplink-protocol/angular
+     * - @uplink-protocol/svelte
+     */
+    getAppropriateAdapter(): AdapterInterface | undefined;
 }
 //# sourceMappingURL=adapter-registry.service.d.ts.map

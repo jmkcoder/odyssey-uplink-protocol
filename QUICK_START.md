@@ -2,10 +2,27 @@
 
 This guide will help you quickly get started with the Odyssey Uplink Protocol using the new zero-configuration approach.
 
+> **PACKAGE STRUCTURE NOTICE:**  
+> The Uplink Protocol is now divided into multiple packages:
+> - @uplink-protocol/core - Core functionality (this package)
+> - @uplink-protocol/react - React integration
+> - @uplink-protocol/vue - Vue integration
+> - @uplink-protocol/angular - Angular integration
+> - @uplink-protocol/svelte - Svelte integration
+>
+> Install only what you need for your project.
+
 ## Installation
 
 ```bash
-npm install @jmkcoder/uplink-protocol
+# Install core package (required)
+npm install @uplink-protocol/core
+
+# Install framework-specific adapter as needed
+npm install @uplink-protocol/react     # For React projects
+npm install @uplink-protocol/vue       # For Vue projects
+npm install @uplink-protocol/angular   # For Angular projects
+npm install @uplink-protocol/svelte    # For Svelte projects
 ```
 
 ## Zero-Configuration Setup
@@ -14,9 +31,25 @@ npm install @jmkcoder/uplink-protocol
 
 ```js
 // src/index.js or your main entry file
-import '@jmkcoder/uplink-protocol/uplink-auto-init';
+import '@uplink-protocol/core/uplink-auto-init';
 
 // Rest of your code...
+```
+
+For framework-specific usage, import from the appropriate package:
+
+```js
+// React example
+import { useUplink } from '@uplink-protocol/react';
+
+// Vue example
+import { useUplink } from '@uplink-protocol/vue';
+
+// Angular example
+import { useController } from '@uplink-protocol/angular';
+
+// Svelte example
+import { getController } from '@uplink-protocol/svelte';
 ```
 
 That's it! The protocol will automatically detect your framework and set up the appropriate adapter.
@@ -538,7 +571,6 @@ Batch updates are especially useful for:
 
 1. Explore the [full documentation](../Odyssey%20Uplink%20Protocol.md) to learn more about the protocol
 2. Check out the [integration examples](../src/services/integration/examples) for more advanced usage
-3. Use the [migration script](../src/scripts/migrate-uplink.js) to update existing projects
 
 ---
 

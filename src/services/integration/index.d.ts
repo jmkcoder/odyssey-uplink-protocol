@@ -1,22 +1,20 @@
 export { detectFramework, autoInitializeAdapter } from './auto-detect';
-export * as ReactIntegration from './react';
-export * as VueIntegration from './vue';
-export * as AngularIntegration from './angular';
-export * as SvelteIntegration from './svelte';
-import { useUplink as useReactUplink } from './react';
-import { useUplink as useVueUplink } from './vue';
-import { useController } from './angular';
-import { getController } from './svelte';
-export { useReactUplink as reactUseUplink };
-export { useVueUplink as vueUseUplink };
-export { useController as angularUseController };
-export { getController as svelteGetController };
 /**
- * Get the appropriate hook for the current framework
- * @returns A framework-specific hook function
+ * NOTE: Framework-specific integrations have been moved to their own packages:
+ * - @uplink-protocol/react
+ * - @uplink-protocol/vue
+ * - @uplink-protocol/angular
+ * - @uplink-protocol/svelte
+ *
+ * This core package only provides the vanilla functionality.
  */
-export declare function getFrameworkHook(): typeof useReactUplink | typeof useVueUplink | typeof useController | typeof getController | ((controller: any) => {
+/**
+ * Simplified hook for vanilla JavaScript usage
+ * In the core package, this function simply returns the controller
+ * Framework-specific implementations are available in their respective packages
+ */
+export declare function getFrameworkHook(): (controller: any) => {
     controller: any;
-});
+};
 export { connectController, disconnectController } from '../../uplink/uplink-protocol';
 //# sourceMappingURL=index.d.ts.map

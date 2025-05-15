@@ -2,6 +2,14 @@
 
 A universal frontend protocol for decoupling UI and logic.
 
+> **PACKAGE STRUCTURE NOTICE:**  
+> This package (@uplink-protocol/core) contains only the core functionality of the Uplink Protocol.  
+> Framework-specific adapters are available in separate packages:
+> - @uplink-protocol/react - React integration
+> - @uplink-protocol/vue - Vue integration
+> - @uplink-protocol/angular - Angular integration
+> - @uplink-protocol/svelte - Svelte integration
+
 ---
 
 ## Table of Contents

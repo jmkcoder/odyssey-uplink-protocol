@@ -1,16 +1,17 @@
 /**
- * Odyssey Uplink Protocol - Main Export
+ * Odyssey Uplink Protocol Core - Main Export
  *
- * This file exports all the core APIs of the Uplink Protocol
+ * This file exports the core APIs of the Uplink Protocol without framework-specific integrations.
+ * Framework integrations are available in separate packages.
  */
 export * from './uplink';
-export * from './services';
+export * from './services/adapter';
 import { connectController, disconnectController } from './uplink/uplink-protocol';
 import { StandardBinding } from './uplink/models/standard-binding';
 import { EventEmitter } from './uplink/models/event-emitter';
 import { ControllerAdapter } from './services/adapter/controller-adapter';
 import { detectFramework, autoInitializeAdapter } from './services/integration/auto-detect';
-export { react, vue, angular, svelte, getFrameworkHook as getFrameworkHookFn, useController as useControllerFn } from './hooks';
+import './uplink-auto-init';
 declare const _default: {
     connectController: typeof connectController;
     disconnectController: typeof disconnectController;

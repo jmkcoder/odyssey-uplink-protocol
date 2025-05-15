@@ -1,0 +1,36 @@
+{
+  "name": "@uplink-protocol/react",
+  "version": "0.0.1",
+  "description": "Odyssey Uplink Protocol React Integration",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "webpack --config webpack.config.js --mode=production"
+  },
+  "keywords": [
+    "web-components",
+    "ui",
+    "components",
+    "react"
+  ],
+  "author": "",
+  "license": "ISC",  "peerDependencies": {
+    "@uplink-protocol/core": "^0.0.2",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@uplink-protocol/core": "^0.0.2",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0",
+    "rimraf": "^5.0.1",
+    "ts-loader": "^9.4.2",
+    "typescript": "^5.0.4",
+    "webpack": "^5.82.0",
+    "webpack-cli": "^5.1.1"
+  }
+}

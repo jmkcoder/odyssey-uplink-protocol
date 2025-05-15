@@ -1,1 +1,1 @@
-{"version":3,"file":"auto-detect.d.ts","sourceRoot":"","sources":["auto-detect.ts"],"names":[],"mappings":"AAGA;;GAEG;AACH,wBAAgB,eAAe,IAAI,OAAO,GAAG,KAAK,GAAG,SAAS,GAAG,QAAQ,GAAG,SAAS,CA4BpF;AAED;;;GAGG;AACH,wBAAgB,qBAAqB,IAAI,IAAI,CAyC5C"}
+{"version":3,"file":"auto-detect.d.ts","sourceRoot":"","sources":["auto-detect.ts"],"names":[],"mappings":"AAGA;;;;;;;;;GASG;AACH,wBAAgB,eAAe,IAAI,OAAO,GAAG,KAAK,GAAG,SAAS,GAAG,QAAQ,GAAG,SAAS,CAGpF;AAED;;;;;;;;;GASG;AACH,wBAAgB,qBAAqB,IAAI,IAAI,CAqB5C"}

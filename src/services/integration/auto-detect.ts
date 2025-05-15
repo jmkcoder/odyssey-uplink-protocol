@@ -3,40 +3,28 @@ import { registerAdapter, setDefaultAdapter } from '../../uplink/uplink-protocol
 
 /**
  * Detects the current framework environment
+ * 
+ * Note: In the core package, this always returns 'vanilla'.
+ * The framework-specific detection logic is implemented in each framework package:
+ * - @uplink-protocol/react
+ * - @uplink-protocol/vue
+ * - @uplink-protocol/angular
+ * - @uplink-protocol/svelte
  */
 export function detectFramework(): 'react' | 'vue' | 'angular' | 'svelte' | 'vanilla' {
-  if (typeof window === 'undefined') {
-    // Server-side rendering environment
-    return 'vanilla';
-  }
-  
-  // Check for React
-  if ((window as any).React || (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__) {
-    return 'react';
-  }
-  
-  // Check for Vue
-  if ((window as any).Vue || document.querySelector('[data-v-app]')) {
-    return 'vue';
-  }
-  
-  // Check for Angular
-  if ((window as any).ng || (window as any).angular || document.querySelector('[ng-version]')) {
-    return 'angular';
-  }
-  
-  // Check for Svelte
-  if ((window as any).__SVELTE__ || document.querySelector('.__svelte-hooks__')) {
-    return 'svelte';
-  }
-  
-  // Default to vanilla
+  // In the core package, we only support vanilla
   return 'vanilla';
 }
 
 /**
- * Automatically initializes the appropriate adapter for the detected framework
- * This should be called once during application startup
+ * Initializes the vanilla adapter in the core package
+ * 
+ * Note: In the core package, only the vanilla adapter is available.
+ * Framework-specific adapters are available in their respective packages:
+ * - @uplink-protocol/react
+ * - @uplink-protocol/vue
+ * - @uplink-protocol/angular
+ * - @uplink-protocol/svelte
  */
 export function autoInitializeAdapter(): void {
   const registry = getAdapterRegistry();
@@ -46,38 +34,18 @@ export function autoInitializeAdapter(): void {
     console.log('Uplink Protocol adapters are already registered');
     return;
   }
+    // In the core package, we only support the vanilla adapter
+  // Framework-specific packages will override this method to support their own adapters
   
-  const framework = detectFramework();
-  
-  // Import and register the appropriate adapter
-  import(`../adapter/${framework}-adapter`).then((module) => {
-    const AdapterClass = module[`${framework.charAt(0).toUpperCase() + framework.slice(1)}Adapter`];
-    if (AdapterClass) {
-      const adapter = new AdapterClass();
-      registerAdapter(adapter);
-      setDefaultAdapter(adapter.name);
-      console.log(`Uplink Protocol initialized with ${adapter.name} adapter`);
-    } else {
-      // Fallback to vanilla
-      import('../adapter/vanilla-adapter').then((vanillaModule) => {
-        const VanillaAdapter = vanillaModule.VanillaAdapter;
-        const adapter = new VanillaAdapter();
-        registerAdapter(adapter);
-        setDefaultAdapter(adapter.name);
-        console.log(`Uplink Protocol initialized with fallback ${adapter.name} adapter`);
-      });
-    }
+  // Import and register the vanilla adapter
+  import('../adapter/vanilla-adapter').then((vanillaModule) => {
+    const VanillaAdapter = vanillaModule.VanillaAdapter;
+    const adapter = new VanillaAdapter();
+    registerAdapter(adapter);
+    setDefaultAdapter(adapter.name);
+    console.log(`Uplink Protocol core initialized with ${adapter.name} adapter`);
   }).catch(error => {
-    console.error(`Error loading adapter for ${framework}:`, error);
-    
-    // Fallback to vanilla
-    import('../adapter/vanilla-adapter').then((vanillaModule) => {
-      const VanillaAdapter = vanillaModule.VanillaAdapter;
-      const adapter = new VanillaAdapter();
-      registerAdapter(adapter);
-      setDefaultAdapter(adapter.name);
-      console.log(`Uplink Protocol initialized with fallback ${adapter.name} adapter`);
-    });
+    console.error(`Error loading vanilla adapter:`, error);
   });
 }
 
