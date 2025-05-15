@@ -1,6 +1,6 @@
 {
     "name": "@uplink-protocol/core",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "description": "Odyssey Uplink Protocol",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",

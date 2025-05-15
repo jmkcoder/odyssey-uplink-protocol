@@ -28,8 +28,7 @@ export interface UplinkContainerProps {
  */
 export const UplinkContainer = ({ controller, children, ...props }: UplinkContainerProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-
-  // Connect controller to element
+  // Connect controller to element and manage props reference
   useEffect(() => {
     if (containerRef.current) {
       // Store props reference for event handling
@@ -44,12 +43,9 @@ export const UplinkContainer = ({ controller, children, ...props }: UplinkContai
     }
   }, [controller]);
   
-  // Update props reference when props change
-  useEffect(() => {
-    if (containerRef.current) {
-      (containerRef.current as any).__reactComponent.props = props;
-    }
-  }, [props]);
+  // Store props in a ref instead of updating on every change
+  const propsRef = useRef(props);
+  propsRef.current = props;
   
   return <div ref={containerRef} data-uplink-controller>{children}</div>;
 };
@@ -122,17 +118,26 @@ export function useUplink<T extends TypedController>(
     
     return initialState;
   });
-
   // Set up binding subscriptions
   useEffect(() => {
     const bindingsToTrack = options.trackBindings === 'all'
       ? Object.keys(controller.bindings || {})
       : (options.trackBindings || []);
     
+    // Store current values to avoid unnecessary updates
+    const currentValues = new Map();
+    
     const unsubscribes = bindingsToTrack.map(key => {
       if (controller.bindings && controller.bindings[key]) {
+        // Initialize current value
+        currentValues.set(key, controller.bindings[key].current);
+        
         return controller.bindings[key].subscribe(value => {
-          setState(prev => ({ ...prev, [key]: value }));
+          // Only update state if value has changed
+          if (currentValues.get(key) !== value) {
+            currentValues.set(key, value);
+            setState(prev => ({ ...prev, [key]: value }));
+          }
         });
       }
       return () => {};
@@ -142,9 +147,25 @@ export function useUplink<T extends TypedController>(
       unsubscribes.forEach(unsub => unsub());
     };
   }, [controller, options.trackBindings]);
-
   // Create Container component bound to this controller
   const Container: React.FC<{ children: ReactNode; [key: string]: any }> = ({ children, ...props }) => {
+    // Use a ref to store the current props for event handlers to prevent rerenders
+    const propsFunctionsRef = useRef<Record<string, Function>>({});
+    
+    // Update the ref when props change, only tracking function props
+    useEffect(() => {
+      if (controller.events) {
+        const eventHandlers: Record<string, Function> = {};
+        Object.keys(controller.events).forEach(eventName => {
+          const propName = `on${eventName.charAt(0).toUpperCase() + eventName.slice(1)}`;
+          if (typeof props[propName] === 'function') {
+            eventHandlers[propName] = props[propName];
+          }
+        });
+        propsFunctionsRef.current = eventHandlers;
+      }
+    }, [props, controller.events]);
+    
     // Set up direct event subscriptions if controller has events
     useEffect(() => {
       if (controller.events) {
@@ -152,20 +173,19 @@ export function useUplink<T extends TypedController>(
           // Convert event name to React prop name format (e.g., "increment" -> "onIncrement")
           const propName = `on${eventName.charAt(0).toUpperCase() + eventName.slice(1)}`;
           
-          // If the prop for this event exists and is a function, subscribe to the event
-          if (typeof props[propName] === 'function') {
-            return emitter.subscribe((data) => {
-              props[propName](data);
-            });
-          }
-          return () => {};
+          // Subscribe using the ref to get latest handler function
+          return emitter.subscribe((data) => {
+            if (typeof propsFunctionsRef.current[propName] === 'function') {
+              propsFunctionsRef.current[propName](data);
+            }
+          });
         });
         
         return () => {
           unsubscribes.forEach(unsub => unsub());
         };
       }
-    }, [props]);
+    }, [controller.events]);
 
     return <UplinkContainer controller={controller} {...props}>{children}</UplinkContainer>;
   };

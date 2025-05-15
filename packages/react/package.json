@@ -1,6 +1,6 @@
 {
   "name": "@uplink-protocol/react",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Odyssey Uplink Protocol React Integration",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,8 +17,9 @@
     "react"
   ],
   "author": "",
-  "license": "ISC",  "peerDependencies": {
-    "@uplink-protocol/core": "^0.0.2",
+  "license": "ISC",
+  "peerDependencies": {
+    "@uplink-protocol/core": "^0.0.3",
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0"
   },
