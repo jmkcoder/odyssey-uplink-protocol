@@ -1,14 +1,12 @@
 {
   "name": "@uplink-protocol/react",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Odyssey Uplink Protocol React Integration",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "types": "module",
   "scripts": {
-    "build": "webpack --config webpack.config.js --mode=production"
+    "build": "webpack --config webpack.config.js --mode=production",
+    "create-package": "npm publish --access=public"
   },
   "keywords": [
     "web-components",

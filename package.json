@@ -1,19 +1,9 @@
 {
     "name": "@uplink-protocol/core",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "description": "Odyssey Uplink Protocol - Core package with vanilla JS integration",
+    "main": "dist/index.js",
     "type": "module",
-    "module": "dist/index.js",
-    "exports": {
-        ".": {
-            "import": "./dist/index.js",
-            "types": "./dist/index.d.ts"
-        }
-    },
-    "files": [
-        "dist",
-        "dist/scripts"
-    ],
     "scripts": {
         "test": "jest",
         "test:watch": "jest --watch",
