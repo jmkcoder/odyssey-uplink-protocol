@@ -6,14 +6,15 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     filename: 'index.js',
     library: {
-      name: 'UplinkProtocolReact',
-      type: 'umd',
-      umdNamedDefine: true,
-      export: 'default'
+      type: 'module'
     },
-    globalObject: 'this',
+    module: true,
     clean: true
-  },  module: {
+  },
+  experiments: {
+    outputModule: true
+  },
+  module: {
     rules: [
       {
         test: /\.(ts|tsx)$/,
