@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uplink Protocol - Vanilla JS Integration Demo</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.5;
+    }
+    .container {
+      border: 1px solid #ddd;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    .counter {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    button {
+      padding: 8px 16px;
+      background: #0078d4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #106ebe;
+    }
+    .count {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .demo-section {
+      margin-bottom: 40px;
+    }
+    h2 {
+      margin-top: 30px;
+      color: #333;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 10px;
+      border-radius: 4px;
+      overflow: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>Uplink Protocol - Vanilla JS Integration</h1>
+  
+  <section class="demo-section">
+    <h2>1. Basic useUplink Example</h2>
+    <div id="counter-container" class="container">
+      <div class="counter">
+        <span>Count: <span id="count-display" class="count">0</span></span>
+        <button id="increment-btn">Increment</button>
+        <button id="decrement-btn">Decrement</button>
+        <button id="reset-btn">Reset</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <h2>2. UplinkContainer Example</h2>
+    <div id="container-demo" class="container">
+      <div class="counter">
+        <span>Count: <span id="container-count" class="count">0</span></span>
+        <button id="container-increment">Increment</button>
+        <button id="container-reset">Reset</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <h2>3. Custom Element Example</h2>
+    <p>Using a custom element with built-in Uplink binding:</p>
+    <counter-component class="container"></counter-component>
+  </section>
+
+  <!-- Load the Uplink Protocol bundle -->
+  <script src="../dist/index.js"></script>
+  
+  <script>
+    // Define a Counter controller for our demos
+    class CounterController {
+      constructor() {
+        // Define bindings that will be tracked
+        this.bindings = {
+          count: new UplinkProtocol.StandardBinding(0)
+        };
+        
+        // Define methods
+        this.methods = {
+          increment: () => {
+            this.bindings.count.set(this.bindings.count.current + 1);
+            
+            // Emit an event when incremented
+            if (this.events && this.events.increment) {
+              this.events.increment.emit(this.bindings.count.current);
+            }
+          },
+          
+          decrement: () => {
+            this.bindings.count.set(this.bindings.count.current - 1);
+          },
+          
+          reset: () => {
+            this.bindings.count.set(0);
+          }
+        };
+        
+        // Define events
+        this.events = {
+          increment: new UplinkProtocol.EventEmitter()
+        };
+      }
+    }
+
+    // Example 1: useUplink
+    document.addEventListener('DOMContentLoaded', () => {
+      // Create a new counter controller
+      const counterController = new CounterController();
+      
+      // Use the useUplink function
+      const { state, methods, connect, disconnect } = UplinkProtocol.useUplink(counterController, {
+        trackBindings: 'all'  // Track all bindings
+      });
+      
+      // Get UI elements
+      const container = document.getElementById('counter-container');
+      const countDisplay = document.getElementById('count-display');
+      const incrementBtn = document.getElementById('increment-btn');
+      const decrementBtn = document.getElementById('decrement-btn');
+      const resetBtn = document.getElementById('reset-btn');
+      
+      // Set up event handlers
+      incrementBtn.addEventListener('click', methods.increment);
+      decrementBtn.addEventListener('click', methods.decrement);
+      resetBtn.addEventListener('click', methods.reset);
+      
+      // Connect controller to container with event handlers
+      connect(container, {
+        onIncrement: (value) => {
+          console.log(`Counter incremented to: ${value}`);
+          countDisplay.textContent = value;
+        }
+      });
+      
+      // Set up binding observation
+      counterController.bindings.count.subscribe(value => {
+        countDisplay.textContent = value;
+      });
+    });
+
+    // Example 2: UplinkContainer
+    document.addEventListener('DOMContentLoaded', () => {
+      // Create a new counter controller
+      const counterController = new CounterController();
+      
+      // Create a container for the controller
+      const container = new UplinkProtocol.UplinkContainer(counterController);
+      
+      // Get UI elements
+      const containerElement = document.getElementById('container-demo');
+      const countDisplay = document.getElementById('container-count');
+      const incrementBtn = document.getElementById('container-increment');
+      const resetBtn = document.getElementById('container-reset');
+      
+      // Set up event handlers
+      incrementBtn.addEventListener('click', counterController.methods.increment);
+      resetBtn.addEventListener('click', counterController.methods.reset);
+      
+      // Connect container
+      container.connect(containerElement, {
+        onIncrement: (value) => {
+          countDisplay.textContent = value;
+        }
+      });
+      
+      // Update UI when binding changes
+      counterController.bindings.count.subscribe(value => {
+        countDisplay.textContent = value;
+      });
+    });
+
+    // Example 3: Custom Element
+    document.addEventListener('DOMContentLoaded', () => {
+      // Define a custom element
+      UplinkProtocol.defineControllerElement('counter-component', new CounterController(), {
+        template: `
+          <div class="counter">
+            <span>Count: <span class="count">0</span></span>
+            <button id="increment-btn">Increment</button>
+            <button id="reset-btn">Reset</button>
+          </div>
+        `,
+        onConnected: (element, controller) => {
+          // Get UI elements
+          const countDisplay = element.querySelector('.count');
+          const incrementBtn = element.querySelector('#increment-btn');
+          const resetBtn = element.querySelector('#reset-btn');
+          
+          // Set up event handlers
+          incrementBtn.addEventListener('click', controller.methods.increment);
+          resetBtn.addEventListener('click', controller.methods.reset);
+          
+          // Update UI when binding changes
+          controller.bindings.count.subscribe(value => {
+            countDisplay.textContent = value;
+          });
+        },
+        onEvent: {
+          increment: (value, element) => {
+            console.log(`Custom element counter incremented to: ${value}`);
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>

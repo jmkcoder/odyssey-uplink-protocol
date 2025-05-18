@@ -3,5 +3,5 @@
  */
 export * from './adapter';
 
-// Export auto-detection functionality but not the framework-specific integrations
-export { detectFramework, autoInitializeAdapter } from './integration/auto-detect';
+// Export vanilla integration
+export * from './integration';

@@ -1,7 +1,7 @@
 {
     "name": "@uplink-protocol/core",
     "version": "0.0.4",
-    "description": "Odyssey Uplink Protocol",
+    "description": "Odyssey Uplink Protocol - Core package with vanilla JS integration",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "exports": {
@@ -18,8 +18,7 @@
     },    "files": [
         "dist",
         "dist/scripts"
-    ],
-    "scripts": {
+    ],    "scripts": {
         "test": "jest",
         "test:watch": "jest --watch",
         "test:coverage": "jest --coverage",        "build": "npm run clean && npm run build:umd",
@@ -28,6 +27,7 @@
         "prepare": "npm run build",
         "dev": "webpack serve --mode development",
         "create-package": "npm publish --access=public",        "demo": "powershell -ExecutionPolicy Bypass -File scripts/open-demo.ps1",
+        "vanilla:demo": "powershell -ExecutionPolicy Bypass -File scripts/open-vanilla-demo.ps1",
         "test:binding": "powershell -ExecutionPolicy Bypass -File scripts/test-two-way-binding.ps1",
         "react:demo": "powershell -ExecutionPolicy Bypass -File scripts/open-react-demo.ps1",
         "hooks:demo": "powershell -ExecutionPolicy Bypass -File scripts/open-hooks-demo.ps1",
@@ -36,12 +36,13 @@
         "update-framework-versions": "powershell -ExecutionPolicy Bypass -File scripts/update-framework-versions.ps1",
         "fix-framework-imports": "powershell -ExecutionPolicy Bypass -File scripts/fix-framework-imports.ps1",
         "create-framework-packages": "echo \"See docs/CREATING_FRAMEWORK_PACKAGES.md for instructions\""
-    },    "bin": {},
-    "keywords": [
+    },    "bin": {},    "keywords": [
         "web-components",
         "ui",
         "components",
-        "button"
+        "button",
+        "vanilla-js",
+        "framework-agnostic"
     ],
     "author": "",
     "license": "ISC",

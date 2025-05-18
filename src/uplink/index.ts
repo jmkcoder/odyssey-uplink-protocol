@@ -1,9 +1,6 @@
 // Export core protocol
 export * from './uplink-protocol';
 
-// Import auto-detection and framework integration
-import '../services/integration/auto-detect';
-
 // Export interfaces
 export * from './interfaces/binding.interface';
 export * from './interfaces/controller.interface';

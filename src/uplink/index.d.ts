@@ -1,5 +1,4 @@
 export * from './uplink-protocol';
-import '../services/integration/auto-detect';
 export * from './interfaces/binding.interface';
 export * from './interfaces/controller.interface';
 export * from './interfaces/framework-controller.interface';

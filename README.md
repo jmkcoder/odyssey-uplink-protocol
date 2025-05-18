@@ -9,6 +9,8 @@ A universal frontend protocol for decoupling UI and logic.
 > - @uplink-protocol/vue - Vue integration
 > - @uplink-protocol/angular - Angular integration
 > - @uplink-protocol/svelte - Svelte integration
+>
+> **Vanilla JavaScript integration is included in the core package.**
 
 ---
 
@@ -934,6 +936,119 @@ class ControllerAdapter {
 
 ### 5.3 Vanilla JS Usage
 
+The Uplink Protocol includes a robust vanilla JavaScript integration that doesn't require any framework. The vanilla integration provides several ways to connect controllers to the DOM:
+
+#### Basic Usage with UplinkContainer
+
+```ts
+import { UplinkContainer } from '@uplink-protocol/core';
+import { CounterController } from './counter.controller';
+
+// Create controller and container
+const controller = new CounterController();
+const container = new UplinkContainer(controller);
+
+// Get DOM element
+const element = document.getElementById('counter');
+
+// Connect controller to element with event handlers
+container.connect(element, {
+  onIncrement: (value) => {
+    console.log(`Counter incremented to: ${value}`);
+    element.querySelector('.count').textContent = value;
+  }
+});
+
+// Set up event listeners for buttons
+element.querySelector('.increment').addEventListener('click', controller.methods.increment);
+element.querySelector('.reset').addEventListener('click', controller.methods.reset);
+
+// Later, to disconnect
+// container.disconnect();
+```
+
+#### React-like API with useUplink
+
+```ts
+import { useUplink } from '@uplink-protocol/core';
+import { CounterController } from './counter.controller';
+
+// Create a controller
+const counterController = new CounterController();
+
+// Use the React-like API
+const { state, methods, connect, disconnect } = useUplink(counterController, {
+  trackBindings: 'all'  // Track all bindings
+});
+
+// Get UI elements
+const container = document.getElementById('counter-container');
+const countDisplay = document.getElementById('count-display');
+const incrementBtn = document.getElementById('increment-btn');
+
+// Set up event handlers
+incrementBtn.addEventListener('click', methods.increment);
+
+// Connect controller to container with event handlers
+connect(container, {
+  onIncrement: (value) => {
+    console.log(`Counter incremented to: ${value}`);
+    countDisplay.textContent = value;
+  }
+});
+
+// Set up binding observation
+counterController.bindings.count.subscribe(value => {
+  countDisplay.textContent = value;
+});
+
+// Later, to disconnect
+// disconnect();
+```
+
+#### Custom Elements with defineControllerElement
+
+```ts
+import { defineControllerElement } from '@uplink-protocol/core';
+import { CounterController } from './counter.controller';
+
+// Define a custom element
+defineControllerElement('counter-component', new CounterController(), {
+  template: `
+    <div class="counter">
+      <span>Count: <span class="count">0</span></span>
+      <button id="increment-btn">Increment</button>
+      <button id="reset-btn">Reset</button>
+    </div>
+  `,
+  onConnected: (element, controller) => {
+    // Get UI elements within the custom element
+    const countDisplay = element.querySelector('.count');
+    const incrementBtn = element.querySelector('#increment-btn');
+    const resetBtn = element.querySelector('#reset-btn');
+    
+    // Set up event handlers
+    incrementBtn.addEventListener('click', controller.methods.increment);
+    resetBtn.addEventListener('click', controller.methods.reset);
+    
+    // Update UI when binding changes
+    controller.bindings.count.subscribe(value => {
+      countDisplay.textContent = value;
+    });
+  },
+  onEvent: {
+    increment: (value, element) => {
+      console.log(`Counter incremented to: ${value}`);
+    }
+  }
+});
+
+// Usage in HTML:
+// <counter-component></counter-component>
+```
+
+#### Manual DOM Binding (Legacy Approach)
+
 ```ts
 class UplinkElement {
   private controller: Controller;
@@ -1002,15 +1117,6 @@ class UplinkElement {
     this.subscriptions = [];
   }
 }
-
-// Usage
-const controller = new UserController();
-const element = document.getElementById('user-form');
-const uplink = new UplinkElement(controller, element);
-
-// Later when done
-uplink.disconnect();
-```
 
 ### 5.4 Two-Way Binding
 
@@ -1087,24 +1193,24 @@ Two-way binding is especially useful for form inputs and other interactive contr
 
 The Odyssey Uplink Protocol provides a zero-configuration approach to framework integration, allowing controllers to work seamlessly with any supported framework without requiring manual adapter setup or custom integration code.
 
-### 6.1 Automatic Framework Detection
+### 6.1 Automatic Initialization
 
-The protocol automatically detects which framework your application is using (React, Vue, Angular, Svelte, or vanilla JS) and sets up the appropriate adapter:
+The protocol provides an automatic initialization mechanism that sets up the vanilla adapter by default:
 
 ```ts
 // Just import this at your app's entry point
 import 'odyssey/uplink-auto-init';
 
-// That's it! The protocol will auto-detect your framework and initialize everything
+// That's it! The vanilla adapter will be initialized and ready to use
 ```
 
-The auto-detection mechanism checks for global framework objects and initializes the most appropriate adapter:
+The initialization process:
 
-- Checks for `React` and `ReactDOM` objects for React detection
-- Checks for `Vue` object for Vue.js detection
-- Checks for `ng` or `angular` objects for Angular detection
-- Checks for `svelte` object for Svelte detection
-- Falls back to the vanilla adapter if no framework is detected
+1. Creates a new instance of the `VanillaAdapter`
+2. Registers the adapter with the protocol
+3. Sets it as the default adapter
+
+This approach provides a simple one-line initialization for vanilla JavaScript projects, and you can later register and use other framework adapters if needed.
 
 ### 6.2 Framework-Specific APIs
 

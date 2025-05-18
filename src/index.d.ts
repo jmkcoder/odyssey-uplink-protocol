@@ -6,11 +6,11 @@
  */
 export * from './uplink';
 export * from './services/adapter';
+export { useUplink, UplinkContainer, defineControllerElement } from './services/integration/vanilla-integration';
 import { connectController, disconnectController } from './uplink/uplink-protocol';
 import { StandardBinding } from './uplink/models/standard-binding';
 import { EventEmitter } from './uplink/models/event-emitter';
 import { ControllerAdapter } from './services/adapter/controller-adapter';
-import { detectFramework, autoInitializeAdapter } from './services/integration/auto-detect';
 import './uplink-auto-init';
 declare const _default: {
     connectController: typeof connectController;
@@ -18,8 +18,6 @@ declare const _default: {
     StandardBinding: typeof StandardBinding;
     EventEmitter: typeof EventEmitter;
     ControllerAdapter: typeof ControllerAdapter;
-    detectFramework: typeof detectFramework;
-    autoInitializeAdapter: typeof autoInitializeAdapter;
 };
 export default _default;
 //# sourceMappingURL=index.d.ts.map

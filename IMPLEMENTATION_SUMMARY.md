@@ -31,8 +31,11 @@ The Odyssey Uplink Protocol is a framework-agnostic library for creating reactiv
   - Vue adapter for Vue.js applications with reactive system integration
   - Angular adapter with change detection integration and component property binding
   - Svelte adapter with store-based reactivity and action integration
-- Enhanced the existing VanillaJS adapter
-- Added automatic framework detection system that works in modern and legacy environments
+- Enhanced the VanillaJS adapter with comprehensive features:
+  - `UplinkContainer` class for connecting controllers to DOM elements
+  - `useUplink` function providing a React-like API for vanilla JS
+  - `defineControllerElement` function for creating custom Web Components
+- Replaced auto-detect with direct vanilla adapter initialization
 - Created comprehensive documentation for each adapter with usage examples
 - Implemented unit tests for all adapters to ensure compatibility and stability
 
@@ -42,11 +45,11 @@ The Odyssey Uplink Protocol is a framework-agnostic library for creating reactiv
   - Vue: `useUplink` composable for Vue.js components with Container component
   - Angular: `useController` function and `ControllerService` for Angular components
   - Svelte: `getController` store integration and `connectElement` action for Svelte components
-- Created a framework-agnostic API with `getFrameworkHook()` for automatic framework detection
+  - Vanilla JS: Enhanced `useUplink` function with React-like API
+- Created a dedicated vanilla JS integration module with comprehensive features
 - Added comprehensive examples in the documentation with practical use cases
-- Created dedicated `hooks.ts` module for easy access to all framework integrations
-- Implemented proper TypeScript declarations in `hooks.d.ts` for improved developer experience
-- Added integration tests for framework hook detection logic
+- Implemented proper TypeScript declarations for improved developer experience
+- Added integration tests for hook logic
 
 ## Documentation
 - Updated README.md with latest features and framework-specific examples
