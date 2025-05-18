@@ -1,6 +1,6 @@
 {
     "name": "@uplink-protocol/core",
-    "version": "0.0.5",
+    "version": "0.0.6",
     "description": "Odyssey Uplink Protocol - Core package with vanilla JS integration",
     "main": "dist/index.js",
     "type": "module",
