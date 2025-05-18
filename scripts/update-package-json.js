@@ -24,10 +24,6 @@ packageJson.exports = {
     "require": "./dist/cjs/index.js",
     "types": "./dist/esm/index.d.ts"
   },
-  "./uplink-auto-init": {
-    "import": "./dist/esm/uplink-auto-init.js",
-    "require": "./dist/cjs/uplink-auto-init.js"
-  },
   "./react": {
     "import": "./dist/esm/services/integration/react.js",
     "require": "./dist/cjs/services/integration/react.js",

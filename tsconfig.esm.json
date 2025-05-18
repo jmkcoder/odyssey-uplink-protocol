@@ -1,9 +1,8 @@
 {
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
+  "extends": "./tsconfig.json",  "compilerOptions": {
     "outDir": "dist/esm",
-    "declaration": true,
-    "declarationMap": true,
+    "declaration": false,
+    "declarationMap": false,
     "sourceMap": true,
     "module": "ESNext"
   },

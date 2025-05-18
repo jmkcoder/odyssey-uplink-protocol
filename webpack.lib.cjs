@@ -1,12 +1,10 @@
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-const { execSync } = require('child_process');
 
 module.exports = (env, argv) => {
   const isProd = argv.mode === 'production';
   
-  // Common configuration for all output formats
   const baseConfig = {
     mode: isProd ? 'production' : 'development',
     devtool: isProd ? false : 'source-map',
@@ -21,20 +19,23 @@ module.exports = (env, argv) => {
         },
       })],
     },
-  };  // Config for generating main UMD build
-  const umdConfig = {
+  };  
+  
+  // Config for generating ESM build
+  const esmConfig = {
     ...baseConfig,
     entry: './src/index.ts',
-    output:{
+    output: {
       path: path.resolve(__dirname, 'dist'),
       filename: 'index.js',
       library: {
-        name: 'UplinkProtocol',
-        type: 'umd',
+        type: 'module',
       },
-      umdNamedDefine: true,
-      globalObject: 'this',
+      chunkFormat: 'module',
       clean: true,
+    },
+    experiments: {
+      outputModule: true,
     },
     module: {
       rules: [
@@ -89,59 +90,12 @@ module.exports = (env, argv) => {
       }),
     ],
     externals: {
-      lit: {
-        commonjs: 'lit',
-        commonjs2: 'lit',
-        amd: 'lit',
-        root: 'lit',
-      },
-      react: {
-        commonjs: 'react',
-        commonjs2: 'react',
-        amd: 'React',
-        root: 'React',
-      },
-      'react-dom': {
-        commonjs: 'react-dom',
-        commonjs2: 'react-dom',
-        amd: 'ReactDOM',
-        root: 'ReactDOM',
-      },
+      lit: 'lit',
+      react: 'react',
+      'react-dom': 'react-dom'
     },
-  };  // Config for the zero-configuration auto-init bundle
-  const autoInitConfig = {
-    ...baseConfig,
-    entry: './src/uplink-auto-init.ts',
-    output: {
-      path: path.resolve(__dirname, 'dist'),
-      filename: 'uplink-auto-init.js',
-      library: {
-        name: 'UplinkAutoInit',
-        type: 'umd',
-      },
-      umdNamedDefine: true,
-      globalObject: 'this',
-    },
-    module: umdConfig.module,
-    resolve: umdConfig.resolve,
-    plugins: [
-      ...umdConfig.plugins,
-      {
-        apply: (compiler) => {
-          compiler.hooks.afterEmit.tap('GenerateTypeDeclarations', () => {
-            console.log('Generating TypeScript declarations for UMD build...');
-            try {
-              execSync('tsc -p tsconfig.declarations.json', { stdio: 'inherit' });
-              console.log('TypeScript declarations generated successfully.');
-            } catch (error) {
-              console.error('Error generating TypeScript declarations:', error);
-            }
-          });
-        },
-      }
-    ],
-    externals: umdConfig.externals
   };
-  
-  return [umdConfig, autoInitConfig];
+
+  // Return only the ESM configuration
+  return esmConfig;
 };

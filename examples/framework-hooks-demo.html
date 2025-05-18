@@ -179,11 +179,12 @@
                            "  <div class=\"count\">{count}</div>\n" +
                            "  <button on:click={methods.increment}>+</button>\n" +
                            "</div>";
-                    break;
-                default:
+                    break;                default:
                     code = "// Vanilla JavaScript\n" +
-                           "import { connectController, disconnectController } from '@jmkcoder/uplink';\n" +
+                           "import { initializeVanillaAdapter, connectController, disconnectController } from '@uplink-protocol/core';\n" +
                            "import CounterController from './counter.controller';\n\n" +
+                           "// Initialize the vanilla adapter\n" +
+                           "initializeVanillaAdapter();\n\n" +
                            "const controller = new CounterController();\n" +
                            "const element = document.getElementById('counter');\n\n" +
                            "connectController(controller, element);\n\n" +

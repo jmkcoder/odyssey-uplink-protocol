@@ -8,11 +8,19 @@ import {
   EventEmitter,
   getControllerFactory
 } from '@uplink-protocol/core';
-import '@uplink-protocol/core/uplink-auto-init';  // Ensure adapter is initialized
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import '../auto-detect';  // Ensure auto-detect is initialized
+import { autoInitializeAdapter } from '../auto-detect';  // Ensure auto-detect is initialized
+
+/**
+ * Initializes the React adapter for use in React applications
+ * This should be called once at the entry point of your application
+ */
+export function initializeReactAdapter(): void {
+  // Call the auto-detect initialization function
+  autoInitializeAdapter();
+}
 
 /**
  * Props for UplinkContainer

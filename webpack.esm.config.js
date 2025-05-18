@@ -1,22 +1,20 @@
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-require('esm');
 
 module.exports = (env, argv) => {
   const isProd = argv.mode === 'production';
   
   return {
     mode: isProd ? 'production' : 'development',
-    entry: './src/index.ts',
-    devtool: isProd ? false : 'source-map',
-    output: {
+    devtool: isProd ? false : 'source-map',    entry: './src/index.ts',    output: {
       path: path.resolve(__dirname, 'dist'),
-      filename: 'index.esm.js',
+      filename: 'index.js',
       library: {
         type: 'module',
       },
-      clean: false,
+      chunkFormat: 'module',
+      clean: true,
     },
     experiments: {
       outputModule: true,
@@ -33,8 +31,7 @@ module.exports = (env, argv) => {
           },
         }),
       ],
-    },
-    module: {
+    },    module: {
       rules: [
         {
           test: /\.tsx?$/,
@@ -77,19 +74,13 @@ module.exports = (env, argv) => {
           ],
         },
       ],
-    },
-    resolve: {
-      extensions: ['.ts', '.tsx', '.js', '.jsx', '.css', '.scss'],
+    },    resolve: {
+      extensions: ['.ts', '.tsx', '.js', '.jsx', '.css', '.scss']
     },
     plugins: [
       new MiniCssExtractPlugin({
         filename: 'components.bundle.css',
       }),
-    ],
-    externals: {
-      lit: 'lit',
-      react: 'react',
-      'react-dom': 'react-dom'
-    }
+    ]
   };
 };

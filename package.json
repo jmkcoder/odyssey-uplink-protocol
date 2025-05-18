@@ -2,32 +2,31 @@
     "name": "@uplink-protocol/core",
     "version": "0.0.4",
     "description": "Odyssey Uplink Protocol - Core package with vanilla JS integration",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
+    "type": "module",
+    "module": "dist/index.js",
     "exports": {
         ".": {
             "import": "./dist/index.js",
-            "require": "./dist/index.js",
             "types": "./dist/index.d.ts"
-        },
-        "./uplink-auto-init": {
-            "import": "./dist/uplink-auto-init.js",
-            "require": "./dist/uplink-auto-init.js",
-            "types": "./dist/uplink-auto-init.d.ts"
         }
-    },    "files": [
+    },
+    "files": [
         "dist",
         "dist/scripts"
-    ],    "scripts": {
+    ],
+    "scripts": {
         "test": "jest",
         "test:watch": "jest --watch",
-        "test:coverage": "jest --coverage",        "build": "npm run clean && npm run build:umd",
-        "build:umd": "webpack --config webpack.lib.js --mode=production",
-        "clean": "rimraf dist",
+        "test:coverage": "jest --coverage",
+        "build:types": "tsc -p tsconfig.declarations.json",
+        "build": "npm run clean && npm run build:types && npx webpack --config webpack.esm.cjs --mode=production",
+        "clean": "rimraf dist && powershell -Command \"Get-ChildItem -Path './src' -Recurse -Include '*.d.ts','*.d.ts.map' | Remove-Item -Force\"",
         "prepare": "npm run build",
-        "dev": "webpack serve --mode development",
-        "create-package": "npm publish --access=public",        "demo": "powershell -ExecutionPolicy Bypass -File scripts/open-demo.ps1",
+        "dev": "npx webpack serve --config webpack.esm.js --mode development --open",
+        "create-package": "npm publish --access=public",
+        "demo": "powershell -ExecutionPolicy Bypass -File scripts/open-demo.ps1",
         "vanilla:demo": "powershell -ExecutionPolicy Bypass -File scripts/open-vanilla-demo.ps1",
+        "vanilla:esm:demo": "powershell -ExecutionPolicy Bypass -File scripts/open-vanilla-esm-demo.ps1",
         "test:binding": "powershell -ExecutionPolicy Bypass -File scripts/test-two-way-binding.ps1",
         "react:demo": "powershell -ExecutionPolicy Bypass -File scripts/open-react-demo.ps1",
         "hooks:demo": "powershell -ExecutionPolicy Bypass -File scripts/open-hooks-demo.ps1",
@@ -36,7 +35,9 @@
         "update-framework-versions": "powershell -ExecutionPolicy Bypass -File scripts/update-framework-versions.ps1",
         "fix-framework-imports": "powershell -ExecutionPolicy Bypass -File scripts/fix-framework-imports.ps1",
         "create-framework-packages": "echo \"See docs/CREATING_FRAMEWORK_PACKAGES.md for instructions\""
-    },    "bin": {},    "keywords": [
+    },
+    "bin": {},
+    "keywords": [
         "web-components",
         "ui",
         "components",
@@ -55,7 +56,6 @@
         "@types/react-dom": "^19.1.3",
         "autoprefixer": "^10.4.21",
         "css-loader": "^7.1.2",
-        "esm": "^3.2.25",
         "html-webpack-plugin": "^5.6.3",
         "jest": "^29.7.0",
         "jest-environment-jsdom": "^29.7.0",

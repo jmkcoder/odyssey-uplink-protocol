@@ -70,7 +70,7 @@ function createPackageJson() {
     version: packageJson.version,
     description: packageJson.description,
     main: 'index.js',
-    module: 'index.esm.js',
+    module: 'index.js',
     types: 'index.d.ts',
     exports: packageJson.exports,
     keywords: packageJson.keywords,
@@ -95,32 +95,28 @@ function createPackageJson() {
 function copyReadmeAndLicense() {
   console.log(`${colors.bright}${colors.blue}Copying documentation files${colors.reset}`);
   copyFile(path.join(__dirname, '../README.md'), path.join(__dirname, '../dist/README.md'));
-  copyFile(path.join(__dirname, '../QUICK_START.md'), path.join(__dirname, '../dist/QUICK_START.md'));
   copyFile(path.join(__dirname, '../LICENSE'), path.join(__dirname, '../dist/LICENSE'));
 }
 
 // Main build process
-console.log(`${colors.bright}${colors.magenta}=== Building Uplink Protocol ====${colors.reset}`);
+console.log(`${colors.bright}${colors.magenta}=== Building Uplink Protocol (ESM Only) ====${colors.reset}`);
 
 prepareDist();
 
-// Build UMD bundle
-const umdBuild = executeCommand('webpack --config webpack.lib.js --mode=production', 'Building UMD bundles');
-
 // Build ESM module
-const esmBuild = executeCommand('webpack --config webpack.esm.js --mode=production', 'Building ESM module');
+const esmBuild = executeCommand('npx webpack --config webpack.esm.config.js --mode=production', 'Building ESM module');
 
 // Generate TypeScript declarations
-const typesBuild = executeCommand('tsc -p tsconfig.declarations.json', 'Generating TypeScript declarations');
+const typesBuild = executeCommand('npx tsc -p tsconfig.declarations.json', 'Generating TypeScript declarations');
 
-if (umdBuild && esmBuild && typesBuild) {
+if (esmBuild && typesBuild) {
   // Create package.json for the dist folder
   createPackageJson();
   
   // Copy README and LICENSE
   copyReadmeAndLicense();
   
-  console.log(`\n${colors.bright}${colors.green}=== Build completed successfully ===${colors.reset}`);
+  console.log(`\n${colors.bright}${colors.green}=== ESM Build completed successfully ===${colors.reset}`);
 } else {
   console.log(`\n${colors.bright}${colors.red}=== Build failed ===${colors.reset}`);
   process.exit(1);

@@ -9,7 +9,16 @@ import {
   EventEmitter,
   getControllerFactory
 } from '../../uplink';
-import '../../uplink-auto-init';  // Ensure auto initialization
+import { autoInitializeAdapter } from './auto-detect';
+
+/**
+ * Initializes the vanilla adapter for use in vanilla JavaScript applications
+ * This should be called once at the entry point of your application
+ */
+export function initializeVanillaAdapter(): void {
+  // Call the auto-detect initialization function
+  autoInitializeAdapter();
+}
 
 /**
  * Options for the useUplink function

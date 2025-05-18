@@ -1,5 +1,4 @@
 import { Controller, TypedController, ControllerState, ControllerEventHandlers, EventEmitter } from '@uplink-protocol/core';
-import '@uplink-protocol/core/uplink-auto-init';
 import * as React from 'react';
 import type { ReactNode } from 'react';
 import '../auto-detect';

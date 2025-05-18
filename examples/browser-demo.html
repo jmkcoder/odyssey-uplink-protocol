@@ -96,14 +96,15 @@
       </div>
     </div>
     
-    <div class="log" id="log"></div>
-  </div>
+    <div class="log" id="log"></div>  </div>
   
   <!-- Import Uplink Protocol -->
   <script src="../dist/index.js"></script>
-  <script src="../dist/uplink-auto-init.js"></script>
   
   <script>
+    // Initialize the vanilla adapter
+    UplinkProtocol.initializeVanillaAdapter();
+    
     // Logging utility
     function log(message) {
       const logEl = document.getElementById('log');

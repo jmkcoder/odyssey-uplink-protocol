@@ -15,12 +15,14 @@ export { ReactAdapter };
 // Export React hooks and components
 import { 
   useUplink, 
-  UplinkContainer
+  UplinkContainer,
+  initializeReactAdapter
 } from './integration/react-integration';
 
-export { 
-  useUplink, 
-  UplinkContainer
+export {
+  useUplink,
+  UplinkContainer,
+  initializeReactAdapter
 };
 
 // Create default export with commonly used APIs

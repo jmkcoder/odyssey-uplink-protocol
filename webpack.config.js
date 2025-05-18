@@ -9,10 +9,10 @@ module.exports = (env, argv) => {
 
   return {
     mode,
-    entry: ['./src/styles.scss', './src/index.ts'],
-    output: {
+    entry: ['./src/styles.scss', './src/index.ts'],    output: {
       path: path.resolve(__dirname, 'dist'),
       filename: 'bundle.js',
+      type: 'module',
     },
     resolve: {
       extensions: ['.ts', '.js', '.css', '.scss'],

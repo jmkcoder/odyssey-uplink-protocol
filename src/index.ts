@@ -12,14 +12,24 @@ export * from './uplink';
 export * from './services/adapter';
 
 // Export vanilla integration
-export { useUplink, UplinkContainer, defineControllerElement } from './services/integration/vanilla-integration';
+export { 
+  useUplink, 
+  UplinkContainer, 
+  defineControllerElement, 
+  initializeVanillaAdapter 
+} from './services/integration/vanilla-integration';
+
+// Export auto-detection functionality
+export { 
+  autoInitializeAdapter, 
+  detectFramework 
+} from './services/integration/auto-detect';
 
 // Direct exports for most commonly used APIs
 import { connectController, disconnectController } from './uplink/uplink-protocol';
 import { StandardBinding } from './uplink/models/standard-binding';
 import { EventEmitter } from './uplink/models/event-emitter';
-import { ControllerAdapter } from './services/adapter/controller-adapter'; 
-import './uplink-auto-init';
+import { ControllerAdapter } from './services/adapter/controller-adapter';
 
 
 // Create a default export with commonly used functions for easier access
