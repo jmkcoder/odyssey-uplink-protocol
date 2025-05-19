@@ -2,6 +2,20 @@
 
 ## @uplink-protocol/core
 
+### 0.0.8 (2025-05-19)
+
+**Improvements**
+- Enhanced `StandardBinding` implementation to properly support multiple subscribers
+- Added error handling to prevent subscriber errors from affecting other subscribers
+- Improved subscriber notification process for more reliable updates
+- Fixed issues with callbacks list modification during iteration
+
+### 0.0.7 (2025-05-18)
+
+**Features**
+- Added helper utilities for simplified binding and event emitter creation
+- Improved TypeScript typing for better developer experience
+
 ### 0.0.4 (2025-05-15)
 
 **Bug Fixes**

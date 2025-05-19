@@ -98,12 +98,8 @@
     
     <div class="log" id="log"></div>  </div>
   
-  <!-- Import Uplink Protocol -->
-  <script src="../dist/index.js"></script>
-  
-  <script>
-    // Initialize the vanilla adapter
-    UplinkProtocol.initializeVanillaAdapter();
+  <script type="module">
+    import { connectController, ControllerAdapter } from '../dist/index.js';
     
     // Logging utility
     function log(message) {
@@ -160,9 +156,6 @@
       // Create and connect controllers
       const counter1 = createCounterController(1);
       const counter2 = createCounterController(2);
-      
-      // Connect controllers to DOM elements
-      const { connectController, ControllerAdapter } = UplinkProtocol;
       
       const adapter1 = new ControllerAdapter(counter1);
       const adapter2 = new ControllerAdapter(counter2);

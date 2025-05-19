@@ -43,14 +43,16 @@
     </div>
   </div>
 
-  <script src="../dist/index.js"></script>
   <script type="module">
+    // Import Uplink Protocol
+    import { createBindings, createEventEmitters, useUplink } from '../dist/index.js'
+
     // Create a simple counter controller
     class CounterController {
       constructor() {
-        this.bindings = {
-          count: new UplinkProtocol.StandardBinding(0)
-        };
+        this.bindings = createBindings({
+          count: 0
+        });
         
         this.methods = {
           increment: () => {
@@ -68,9 +70,9 @@
           }
         };
         
-        this.events = {
-          increment: new UplinkProtocol.EventEmitter()
-        };
+        this.events = createEventEmitters({
+          increment: null
+        });
       }
     }
     
@@ -86,7 +88,7 @@
       const resetBtn = document.getElementById('reset');
       
       // Use the useUplink function
-      const { state, methods, connect } = UplinkProtocol.useUplink(controller, {
+      const { state, methods, connect } = useUplink(controller, {
         trackBindings: ['count']
       });
       
