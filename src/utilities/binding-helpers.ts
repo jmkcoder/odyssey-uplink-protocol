@@ -6,8 +6,9 @@
  */
 
 import { Binding } from "../uplink/interfaces/binding.interface";
-import { StandardBinding } from "../uplink/models/standard-binding";
 import { EventEmitter } from "../uplink/models/event-emitter";
+import { createBinding } from "../uplink/models/create-binding";
+import { Unsubscribe } from "../uplink/types/unsubscribe.type";
 
 /**
  * Creates a record of bindings with specified initial values
@@ -22,15 +23,51 @@ import { EventEmitter } from "../uplink/models/event-emitter";
  *   isActive: true,
  *   items: []
  * });
+ * 
+ * @example
+ * // With custom implementations
+ * const bindings = createBindings({
+ *   config: { 
+ *     initialValue: configObj,
+ *     customSet: (value) => configService.set(value),
+ *     customSubscribe: (callback) => configService.subscribe(callback)
+ *   }
+ * });
  */
 export function createBindings<T extends Record<string, any>>(
   bindingDefinitions: T
-): { [K in keyof T]: Binding<T[K]> } {
-  const result = {} as { [K in keyof T]: Binding<T[K]> };
+): { [K in keyof T]: Binding<T[K]> };
+export function createBindings<
+  T extends Record<string, { 
+    initialValue: any, 
+    customSet?: (value: any) => void, 
+    customSubscribe?: (callback: (value: any) => void) => Unsubscribe 
+  }>
+>(
+  bindingDefinitions: T
+): { [K in keyof T]: Binding<T[K]['initialValue']> };
+export function createBindings(
+  bindingDefinitions: Record<string, any>
+): Record<string, Binding<any>> {
+  const result: Record<string, Binding<any>> = {};
   
   for (const key in bindingDefinitions) {
     if (Object.prototype.hasOwnProperty.call(bindingDefinitions, key)) {
-      result[key] = new StandardBinding<T[typeof key]>(bindingDefinitions[key]);
+      const definition = bindingDefinitions[key];
+      
+      // Check if the definition is an object with initialValue and custom implementations
+      if (definition && typeof definition === 'object' && 'initialValue' in definition) {
+        result[key] = createBinding(
+          definition.initialValue, 
+          {
+            customSet: definition.customSet,
+            customSubscribe: definition.customSubscribe
+          }
+        );
+      } else {
+        // Simple value, create a standard binding
+        result[key] = createBinding(definition);
+      }
     }
   }
   

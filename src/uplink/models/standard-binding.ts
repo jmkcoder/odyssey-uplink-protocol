@@ -10,14 +10,33 @@ export class StandardBinding<T> implements Binding<T> {
   current: T;
   _callbacks: ((value: T) => void)[] = [];
   
-  constructor(initialValue: T) {
+  // Custom implementation functions
+  private _customSet?: (value: T) => void;
+  private _customSubscribe?: (callback: (value: T) => void) => Unsubscribe;
+  
+  constructor(
+    initialValue: T, 
+    options?: {
+      customSet?: (value: T) => void;
+      customSubscribe?: (callback: (value: T) => void) => Unsubscribe;
+    }
+  ) {
     this.current = initialValue;
+    this._customSet = options?.customSet;
+    this._customSubscribe = options?.customSubscribe;
   }
 
   /**
    * Updates the binding value and notifies all subscribers
    */
   set(value: T): void {
+    // If a custom set function was provided, use it
+    if (this._customSet) {
+      this._customSet(value);
+      return;
+    }
+    
+    // Default implementation
     // Update the current value
     this.current = value;
     
@@ -41,6 +60,12 @@ export class StandardBinding<T> implements Binding<T> {
    * @returns A function to unsubscribe
    */
   subscribe(callback: (value: T) => void): Unsubscribe {
+    // If a custom subscribe function was provided, use it
+    if (this._customSubscribe) {
+      return this._customSubscribe(callback);
+    }
+    
+    // Default implementation
     // Validate the callback is a function
     if (typeof callback !== 'function') {
       console.error('Attempted to subscribe with non-function:', callback);

@@ -1,0 +1,226 @@
+// filepath: d:\Projects\Odyssey\components\Uplink Protocol v0.1\examples\custom-binding-demo.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom Binding Demo - Uplink Protocol</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .demo-container {
+      border: 1px solid #ddd;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    button {
+      padding: 8px 16px;
+      margin-right: 8px;
+      margin-top: 10px;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #3367d6;
+    }
+    .count {
+      font-size: 2em;
+      margin: 10px 0;
+    }
+    h2 {
+      margin-top: 30px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+    code {
+      background-color: #f5f5f5;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    pre {
+      background-color: #f5f5f5;
+      padding: 12px;
+      border-radius: 5px;
+      overflow: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>Custom Binding Implementation Demo</h1>
+  <p>This example demonstrates how to use custom implementation of set and subscribe methods in bindings.</p>
+
+  <div class="demo-container">
+    <h2>Example 1: Standard Binding</h2>
+    <div>
+      <div class="count" id="standard-count">0</div>
+      <button id="standard-increment">Increment</button>
+      <button id="standard-decrement">Decrement</button>
+      <button id="standard-reset">Reset</button>
+    </div>
+  </div>
+
+  <div class="demo-container">
+    <h2>Example 2: Custom Binding</h2>
+    <div>
+      <div class="count" id="custom-count">0</div>
+      <button id="custom-increment">Increment</button>
+      <button id="custom-decrement">Decrement</button>
+      <button id="custom-reset">Reset</button>
+    </div>
+  </div>
+
+  <div class="demo-container">
+    <h2>Example 3: Binding with Logging</h2>
+    <div>
+      <div class="count" id="logging-count">0</div>
+      <button id="logging-increment">Increment</button>
+      <button id="logging-decrement">Decrement</button>
+      <button id="logging-reset">Reset</button>
+      <pre id="logs"></pre>
+    </div>
+  </div>
+
+  <script type="module">
+    import { StandardBinding, createBindings } from '../dist/index.js';
+    document.addEventListener('DOMContentLoaded', () => {
+      // Example 1: Standard binding implementation
+      const standardBinding = new StandardBinding(0);
+      
+      // Set up UI
+      const standardCountElement = document.getElementById('standard-count');
+      document.getElementById('standard-increment').addEventListener('click', () => {
+        standardBinding.set(standardBinding.current + 1);
+      });
+      document.getElementById('standard-decrement').addEventListener('click', () => {
+        standardBinding.set(standardBinding.current - 1);
+      });
+      document.getElementById('standard-reset').addEventListener('click', () => {
+        standardBinding.set(0);
+      });
+      
+      // Subscribe to changes
+      standardBinding.subscribe(value => {
+        standardCountElement.textContent = value;
+      });
+
+      // Example 2: Custom binding implementation with external service
+      // Create a counter service that manages state
+      const counterService = {
+        _value: 0,
+        _listeners: [],
+        get value() { return this._value; },
+        setValue(newValue) {
+          this._value = newValue;
+          this._listeners.forEach(listener => listener(newValue));
+        },
+        subscribe(callback) {
+          this._listeners.push(callback);
+          return () => {
+            this._listeners = this._listeners.filter(listener => listener !== callback);
+          };
+        }
+      };
+      
+      // Create a binding that uses the counter service
+      const customBinding = createBindings(counterService.value, {
+        customSet: (value) => counterService.setValue(value),
+        customSubscribe: (callback) => counterService.subscribe(callback)
+      });
+      
+      // Set up UI
+      const customCountElement = document.getElementById('custom-count');
+      document.getElementById('custom-increment').addEventListener('click', () => {
+        customBinding.set(customBinding.current + 1);
+      });
+      document.getElementById('custom-decrement').addEventListener('click', () => {
+        customBinding.set(customBinding.current - 1);
+      });
+      document.getElementById('custom-reset').addEventListener('click', () => {
+        customBinding.set(0);
+      });
+      
+      // Subscribe to changes
+      customBinding.subscribe(value => {
+        customCountElement.textContent = value;
+      });
+
+      // Example 3: Binding with logging
+      const logsElement = document.getElementById('logs');
+      
+      function addLog(message) {
+        const time = new Date().toLocaleTimeString();
+        logsElement.textContent += `[${time}] ${message}\n`;
+        logsElement.scrollTop = logsElement.scrollHeight;
+      }
+      
+      // Create binding with logging wrapper
+      const loggingBinding = createBindings(0, {
+        customSet: (value) => {
+          addLog(`Setting value to: ${value}`);
+          loggingBinding.current = value; // Still need to update current
+          
+          // Important: make a copy of the callbacks to avoid issues during iteration
+          const callbacksToNotify = loggingBinding._callbacks.slice();
+          
+          // Notify subscribers
+          callbacksToNotify.forEach(callback => {
+            try {
+              callback(value);
+            } catch (error) {
+              addLog(`Error in subscriber: ${error}`);
+            }
+          });
+        },
+        customSubscribe: (callback) => {
+          addLog(`New subscriber added`);
+          
+          // Add callback to subscribers
+          loggingBinding._callbacks.push(callback);
+          
+          // Return unsubscribe function
+          return () => {
+            addLog(`Subscriber removed`);
+            loggingBinding._callbacks = loggingBinding._callbacks.filter(cb => cb !== callback);
+          };
+        }
+      });
+      
+      // Set up UI
+      const loggingCountElement = document.getElementById('logging-count');
+      document.getElementById('logging-increment').addEventListener('click', () => {
+        loggingBinding.set(loggingBinding.current + 1);
+      });
+      document.getElementById('logging-decrement').addEventListener('click', () => {
+        loggingBinding.set(loggingBinding.current - 1);
+      });
+      document.getElementById('logging-reset').addEventListener('click', () => {
+        loggingBinding.set(0);
+      });
+      
+      // Subscribe to changes
+      loggingBinding.subscribe(value => {
+        loggingCountElement.textContent = value;
+      });
+      
+      // Additional subscriber for demonstration
+      const loggingUnsubscribe = loggingBinding.subscribe(value => {
+        addLog(`Value changed to: ${value}`);
+      });
+      
+      // Auto unsubscribe after 10 seconds
+      setTimeout(() => {
+        addLog('Auto-unsubscribing logger after timeout');
+        loggingUnsubscribe();
+      }, 10000);
+    });
+  </script>
+</body>
+</html>
