@@ -30,13 +30,20 @@ import { connectController, disconnectController } from './uplink/uplink-protoco
 import { StandardBinding } from './uplink/models/standard-binding';
 import { EventEmitter } from './uplink/models/event-emitter';
 import { ControllerAdapter } from './services/adapter/controller-adapter';
+import { createBindings, createEventEmitters } from './utilities/binding-helpers';
 
+// Export utility functions
+export { createBindings, createEventEmitters };
 
 // Create a default export with commonly used functions for easier access
 export default {
   // Core functions
   connectController,
   disconnectController,
+  
+  // Helper functions
+  createBindings,
+  createEventEmitters,
   
   // Core classes
   StandardBinding,

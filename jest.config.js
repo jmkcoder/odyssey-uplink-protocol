@@ -1,4 +1,5 @@
-module.exports = {
+/** @type {import('jest').Config} */
+const config = {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
@@ -21,7 +22,8 @@ module.exports = {
     'src/**/*.{js,jsx,ts,tsx}',
     '!src/**/*.d.ts',
     '!src/**/*.stories.{js,jsx,ts,tsx}'
-  ],
-  testMatch: ['**/__tests__/**/*.spec.(js|jsx|ts|tsx)'],
+  ],  testMatch: ['**/__tests__/**/*.spec.(js|jsx|ts|tsx)', '**/__tests__/**/*.test.(js|jsx|ts|tsx)'],
   testPathIgnorePatterns: ['/node_modules/', '/lib/']
 };
+
+export default config;

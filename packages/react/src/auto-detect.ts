@@ -1,6 +1,15 @@
 import { getAdapterRegistry, registerAdapter, setDefaultAdapter } from '@uplink-protocol/core';
 import { ReactAdapter } from './adapter/react-adapter';
 
+// Add type declaration for global uplink protocol core
+declare global {
+  interface Window {
+    __uplinkProtocolCore?: {
+      autoInitializeAdapter: () => void;
+    };
+  }
+}
+
 /**
  * Detects if React is available in the current environment
  * 
@@ -47,12 +56,24 @@ export function autoInitializeAdapter(): void {
     setDefaultAdapter(adapter.name);
     console.log(`Uplink Protocol initialized with ${adapter.name} adapter`);
   } else {
-    // If React isn't available, fall back to core package initialization
-    import('../../../src/services/integration/auto-detect').then((coreModule) => {
-      coreModule.autoInitializeAdapter();
-    }).catch(error => {
-      console.error('Error falling back to core initialization:', error);
-    });
+    // For non-browser environments or when React is not available
+    console.log('React not detected, initializing with default adapter');
+    
+    // Instead of dynamic import, use the VanillaAdapter directly
+    // This eliminates code splitting while ensuring we have an adapter
+    try {
+      // Import directly from core package
+      const CorePackage = require('@uplink-protocol/core');
+      if (CorePackage && CorePackage.VanillaAdapter) {
+        const vanillaAdapter = new CorePackage.VanillaAdapter();
+        registerAdapter(vanillaAdapter);
+        setDefaultAdapter(vanillaAdapter.name);
+      } else {
+        console.warn('Failed to load VanillaAdapter from core package');
+      }
+    } catch (error) {
+      console.error('Error initializing adapter:', error);
+    }
   }
 }
 

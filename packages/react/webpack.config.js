@@ -14,6 +14,10 @@ module.exports = {
   experiments: {
     outputModule: true
   },
+  optimization: {
+    splitChunks: false,
+    runtimeChunk: false
+  },
   module: {
     rules: [
       {

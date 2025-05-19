@@ -82,6 +82,39 @@ class CounterController {
 }
 ```
 
+### Using Helper Functions
+
+The Uplink Protocol provides helper functions to simplify controller creation:
+
+```javascript
+import { createBindings, createEventEmitters } from '@uplink-protocol/core';
+
+class CounterController {
+  // Create bindings with initial values
+  bindings = createBindings({
+    count: 0,
+    isEven: true
+  });
+  
+  // Create event emitters
+  events = createEventEmitters(['increment', 'decrement', 'reset']);
+  
+  methods = {
+    increment: () => {
+      const newCount = this.bindings.count.current + 1;
+      this.bindings.count.set(newCount);
+      this.bindings.isEven.set(newCount % 2 === 0);
+      this.events.increment.emit(newCount);
+    },
+    
+    // ...other methods...
+  };
+}
+```
+
+For more details on helper functions, see the [Helpers Guide](HELPERS_GUIDE.md).
+```
+
 ## Using Controllers with Different Frameworks
 
 ### Vanilla JavaScript

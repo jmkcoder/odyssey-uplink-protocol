@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uplink Protocol Helper Functions Demo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .container {
+      border: 1px solid #ddd;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    .counter {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 8px 16px;
+      border: none;
+      background-color: #4285f4;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #3367d6;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .log {
+      background-color: #f5f5f5;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 20px;
+      height: 200px;
+      overflow-y: auto;
+    }
+    .log-item {
+      margin-bottom: 5px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 5px;
+    }
+    .status {
+      font-weight: bold;
+      color: #666;
+    }
+    .status.valid {
+      color: green;
+    }
+    .status.invalid {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <h1>Uplink Protocol Helper Functions Demo</h1>
+  
+  <div class="container">
+    <h2>Example 1: Counter Controller</h2>
+    <p>This example demonstrates the <code>createBindings</code> and <code>createEventEmitters</code> helper functions.</p>
+    
+    <div class="counter">
+      <div>Count: <span id="count-display">0</span></div>
+      <div>Status: <span id="even-status">even</span></div>
+    </div>
+    
+    <div>
+      <button id="increment-btn">Increment</button>
+      <button id="decrement-btn">Decrement</button>
+      <button id="reset-btn">Reset</button>
+    </div>
+  </div>
+  
+  <div class="container">
+    <h2>Example 2: Form Controller</h2>
+    <p>This example demonstrates the helper functions with a more complex form controller.</p>
+    
+    <form id="contact-form">
+      <div class="form-group">
+        <label for="name">Name:</label>
+        <input type="text" id="name" placeholder="Your name">
+      </div>
+      
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" placeholder="Your email">
+      </div>
+      
+      <div class="form-group">
+        <label for="message">Message:</label>
+        <textarea id="message" rows="4" placeholder="Your message"></textarea>
+      </div>
+      
+      <div class="form-status">
+        <span class="status" id="form-status">Form is invalid</span>
+      </div>
+      
+      <div>
+        <button type="submit" id="submit-btn">Submit</button>
+        <button type="button" id="reset-form-btn">Reset</button>
+      </div>
+    </form>
+  </div>
+  
+  <div class="log">
+    <h3>Event Log</h3>
+    <div id="event-log"></div>
+  </div>
+  
+  <!-- Load the Uplink Protocol ESM bundle -->
+  <script type="module">
+    import * as UplinkProtocol from '../dist/index.js';
+    
+    // Initialize the vanilla adapter
+    UplinkProtocol.initializeVanillaAdapter();
+    
+    // Helper function to log events
+    function logEvent(message) {
+      const logContainer = document.getElementById('event-log');
+      const logItem = document.createElement('div');
+      logItem.className = 'log-item';
+      logItem.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+      logContainer.prepend(logItem);
+    }
+    
+    // Example 1: Counter Controller using helpers
+    class CounterController {
+      // Create bindings with initial values using the helper
+      bindings = UplinkProtocol.createBindings({
+        count: 0,
+        isEven: true
+      });
+      
+      // Create event emitters using the helper
+      events = UplinkProtocol.createEventEmitters(['increment', 'decrement', 'reset']);
+      
+      // Define methods
+      methods = {
+        increment: () => {
+          const newCount = this.bindings.count.current + 1;
+          this.bindings.count.set(newCount);
+          this.bindings.isEven.set(newCount % 2 === 0);
+          this.events.increment.emit(newCount);
+        },
+        
+        decrement: () => {
+          const newCount = this.bindings.count.current - 1;
+          this.bindings.count.set(newCount);
+          this.bindings.isEven.set(newCount % 2 === 0);
+          this.events.decrement.emit(newCount);
+        },
+        
+        reset: () => {
+          this.bindings.count.set(0);
+          this.bindings.isEven.set(true);
+          this.events.reset.emit(0);
+        }
+      };
+    }
+    
+    // Example 2: Form Controller using helpers
+    class FormController {
+      // Create bindings with initial values
+      bindings = UplinkProtocol.createBindings({
+        name: '',
+        email: '',
+        message: '',
+        isValid: false,
+        isSubmitting: false
+      });
+      
+      // Create typed event emitters
+      events = UplinkProtocol.createEventEmitters(['submit', 'validate', 'change', 'reset']);
+      
+      // Define controller methods
+      methods = {
+        setField: (field, value) => {
+          this.bindings[field].set(value);
+          this.events.change.emit(field);
+          this.validateForm();
+        },
+        
+        validateForm: () => {
+          const isValid = 
+            !!this.bindings.name.current && 
+            !!this.bindings.email.current && 
+            this.bindings.email.current.includes('@');
+          
+          this.bindings.isValid.set(isValid);
+          this.events.validate.emit(isValid);
+          return isValid;
+        },
+        
+        submitForm: async () => {
+          if (!this.methods.validateForm()) {
+            return;
+          }
+          
+          this.bindings.isSubmitting.set(true);
+          
+          try {
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Get form data from bindings
+            const formData = {
+              name: this.bindings.name.current,
+              email: this.bindings.email.current,
+              message: this.bindings.message.current
+            };
+            
+            // Emit submit event with form data
+            this.events.submit.emit(formData);
+            
+            // Reset form
+            this.resetForm();
+          } finally {
+            this.bindings.isSubmitting.set(false);
+          }
+        },
+        
+        resetForm: () => {
+          this.bindings.name.set('');
+          this.bindings.email.set('');
+          this.bindings.message.set('');
+          this.bindings.isValid.set(false);
+          this.events.reset.emit();
+        }
+      };
+    }
+    
+    // Initialize controllers when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      // Example 1: Counter Controller
+      const counterController = new CounterController();
+      const countDisplay = document.getElementById('count-display');
+      const evenStatus = document.getElementById('even-status');
+      
+      // Set up event handlers
+      document.getElementById('increment-btn').addEventListener('click', counterController.methods.increment);
+      document.getElementById('decrement-btn').addEventListener('click', counterController.methods.decrement);
+      document.getElementById('reset-btn').addEventListener('click', counterController.methods.reset);
+      
+      // Connect controller to UI
+      UplinkProtocol.connectController(counterController, document.querySelector('.counter'));
+      
+      // Subscribe to bindings
+      counterController.bindings.count.subscribe(value => {
+        countDisplay.textContent = value;
+      });
+      
+      counterController.bindings.isEven.subscribe(isEven => {
+        evenStatus.textContent = isEven ? 'even' : 'odd';
+      });
+      
+      // Subscribe to events
+      counterController.events.increment.subscribe(value => {
+        logEvent(`Counter incremented to: ${value}`);
+      });
+      
+      counterController.events.decrement.subscribe(value => {
+        logEvent(`Counter decremented to: ${value}`);
+      });
+      
+      counterController.events.reset.subscribe(() => {
+        logEvent('Counter reset to 0');
+      });
+      
+      // Example 2: Form Controller
+      const formController = new FormController();
+      const nameInput = document.getElementById('name');
+      const emailInput = document.getElementById('email');
+      const messageInput = document.getElementById('message');
+      const formStatus = document.getElementById('form-status');
+      const contactForm = document.getElementById('contact-form');
+      
+      // Set up two-way binding for inputs
+      nameInput.addEventListener('input', () => {
+        formController.methods.setField('name', nameInput.value);
+      });
+      
+      emailInput.addEventListener('input', () => {
+        formController.methods.setField('email', emailInput.value);
+      });
+      
+      messageInput.addEventListener('input', () => {
+        formController.methods.setField('message', messageInput.value);
+      });
+      
+      // Set up form submission
+      contactForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        formController.methods.submitForm();
+      });
+      
+      // Reset button
+      document.getElementById('reset-form-btn').addEventListener('click', () => {
+        formController.methods.resetForm();
+      });
+      
+      // Connect controller to UI
+      UplinkProtocol.connectController(formController, contactForm);
+      
+      // Subscribe to bindings for UI updates
+      formController.bindings.name.subscribe(value => {
+        nameInput.value = value;
+      });
+      
+      formController.bindings.email.subscribe(value => {
+        emailInput.value = value;
+      });
+      
+      formController.bindings.message.subscribe(value => {
+        messageInput.value = value;
+      });
+      
+      formController.bindings.isValid.subscribe(isValid => {
+        formStatus.textContent = isValid ? 'Form is valid' : 'Form is invalid';
+        formStatus.className = isValid ? 'status valid' : 'status invalid';
+      });
+      
+      // Subscribe to events
+      formController.events.submit.subscribe(formData => {
+        logEvent(`Form submitted: ${JSON.stringify(formData)}`);
+      });
+      
+      formController.events.validate.subscribe(isValid => {
+        logEvent(`Form validation: ${isValid ? 'Valid' : 'Invalid'}`);
+      });
+      
+      formController.events.change.subscribe(field => {
+        logEvent(`Form field changed: ${field}`);
+      });
+      
+      formController.events.reset.subscribe(() => {
+        logEvent('Form reset');
+      });
+    });
+  </script>
+</body>
+</html>
